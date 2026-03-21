@@ -113,11 +113,12 @@ Include:
 2. The standard session start ritual (git log, git status, read PROGRESS).
 3. The exact tech stack found in the code.
 4. Code rules: Document the specific patterns you found for routing, error handling, styling, and data access. Make these highly specific to this codebase (e.g., "API routes always return a standardized ApiResponse object", not just "handle errors well").
-5. A forbidden section: Add standard protections (no unexpected package installations, no DB schema changes without asking), but add specific guardrails based on any anti-patterns you noticed we are actively avoiding in this repo.
-6. CI/CD & secrets: Never echo, print, or persist secrets in logs/artifacts. Use the platform's secret store; do not hardcode or inline secrets in build configs. Fail the pipeline if required secrets are missing. Validate env vars at startup/build time.
-7. Developer experience — read the developer background in the spec and calibrate accordingly. If the developer is early-career or learning, explain what you're doing and why as you go. If the developer is experienced, be concise and just execute.
-8. Disagreements — if the user asks you to do something that would violate a rule in this file, introduce a security risk, create technical debt, or go against best practices for the stack, say so before proceeding. Explain why you disagree and what you'd recommend instead. Then let the user decide. Do not silently comply with something you think is a mistake.
-9. End-of-session — when the user says "we're done", follow this process:
+5. Testing configuration: Scan the codebase to identify the test framework in use, the exact commands to run the full suite and a single test file, any environment setup required before tests will pass (test database, env vars, seed data), and how to interpret the output to confirm pass or failure. Document this in a Testing section of the CLAUDE.md based on what actually exists — not what should ideally exist.
+6. A forbidden section: Add standard protections (no unexpected package installations, no DB schema changes without asking), but add specific guardrails based on any anti-patterns you noticed we are actively avoiding in this repo.
+7. CI/CD & secrets: Never echo, print, or persist secrets in logs/artifacts. Use the platform's secret store; do not hardcode or inline secrets in build configs. Fail the pipeline if required secrets are missing. Validate env vars at startup/build time.
+8. Developer experience — read the developer background in the spec and calibrate accordingly. If the developer is early-career or learning, explain what you're doing and why as you go. If the developer is experienced, be concise and just execute.
+9. Disagreements — if the user asks you to do something that would violate a rule in this file, introduce a security risk, create technical debt, or go against best practices for the stack, say so before proceeding. Explain why you disagree and what you'd recommend instead. Then let the user decide. Do not silently comply with something you think is a mistake.
+10. End-of-session — when the user says "we're done", follow this process:
    - Update PROGRESS.md with what was completed, what's in progress, and any new items discovered
    - Suggest a git commit message with type prefix and bullet points
    - Update DECISIONS.md if any architectural decisions were made
@@ -427,7 +428,14 @@ start of every session. Include:
    - Security basics (secrets never hardcoded, sensitive data never logged,
      environment variables validated at startup)
 
-5. A forbidden section:
+5. Testing configuration: Based on the tech stack in the spec, document
+   the test framework appropriate to the stack, the expected commands to
+   run the full suite and a single test file, and any environment setup
+   that will be needed (test database, env vars, seed data). Note that
+   this section should be updated once the test infrastructure is
+   actually in place — at CLAUDE.md creation time, tests don't exist yet.
+
+6. A forbidden section:
    - Before installing any new package or dependency, explain why it's
      needed, what problem it solves, and whether the same thing could be
      done with what's already in the stack. Let the user approve before
@@ -438,19 +446,19 @@ start of every session. Include:
      in the spec
    - CI/CD & secrets: Never echo, print, or persist secrets in logs/artifacts. Use the platform's secret store; do not hardcode or inline secrets in build configs. Fail the pipeline if required secrets are missing. Validate env vars at startup/build time.
 
-6. Developer experience — read the developer background in the spec and
+7. Developer experience — read the developer background in the spec and
    calibrate accordingly. If the developer is early-career or learning,
    explain what you're doing and why as you go. If the developer is
    experienced, be concise and just execute.
 
-7. Disagreements — if the user asks you to do something that would
+8. Disagreements — if the user asks you to do something that would
    violate a rule in this file, introduce a security risk, create
    technical debt, or go against best practices for the stack, say so
    before proceeding. Explain why you disagree and what you'd recommend
    instead. Then let the user decide. Do not silently comply with
    something you think is a mistake.
 
-8. End-of-session — when the user says "we're done", follow this
+9. End-of-session — when the user says "we're done", follow this
    process:
    - Update PROGRESS.md with what was completed, what's in progress,
      and any new items discovered
