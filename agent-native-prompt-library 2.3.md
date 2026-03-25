@@ -151,7 +151,7 @@ Format this as a clean markdown file I can save as AGENTS.md in the project root
 **Model:** Fast/code-focused tier
 
 **The prompt:**
-Based on the SPEC.md (see docs/SPEC.md) and the actual codebase, I need to generate two files: PROGRESS.md and DECISIONS.md.
+Based on the SPEC.md (see docs/SPEC.md) and the actual codebase, I need to generate two files: docs/PROGRESS.md and docs/DECISIONS.md.
 
 Task 1: Generate PROGRESS.md Scan the codebase for TODO comments, half-implemented endpoints, and features mentioned in the UI that don't have backend logic. Create a PROGRESS.md with:
 
@@ -179,7 +179,7 @@ Look at the architecture and infer the foundational technical decisions that hav
   "Revisit if auth requirements expand beyond email/password." If there's
   no realistic scenario where this changes for v1, write "Stable for v1."
 
-Output both files clearly separated so I can save them.
+Output both files clearly separated so I can save them as docs/PROGRESS.md and docs/DECISIONS.md.
 
 **What good output looks like:** The PROGRESS.md acts as an immediate hit-list of technical debt and broken windows. The DECISIONS.md accurately captures the reality of the app's foundation without judging it.
 
@@ -195,7 +195,7 @@ Output both files clearly separated so I can save them.
 
 **The prompt:**
 I have just generated foundational documentation for this existing
-codebase (SPEC.md, AGENTS.md, DECISIONS.md).
+codebase (docs/SPEC.md, AGENTS.md, docs/DECISIONS.md).
 
 I need you to run a Delta Audit: compare the actual codebase against
 these newly generated standards to find where the code contradicts
@@ -207,9 +207,9 @@ Scan the codebase and flag:
    in AGENTS.md? (e.g., 90% of routes use the standard error handler,
    but these 3 routes use raw try/catch blocks).
 2. Spec Drift: Are there endpoints, models, or components in the code
-   that serve no discernible purpose and aren't in the SPEC.md?
+   that serve no discernible purpose and aren't in the docs/SPEC.md?
    (Dead code).
-3. Security/Architecture Gaps: Based on the stack defined in DECISIONS.md,
+3. Security/Architecture Gaps: Based on the stack defined in docs/DECISIONS.md,
    are there any glaring omissions? (e.g., "You chose JWT for auth,
    but there is no token expiration or refresh logic implemented").
 
@@ -337,6 +337,8 @@ dependency, or more information. During any working session, if something
 can't move forward, it goes here instead of getting lost in conversation.)
 ```
 
+Format this as a clean markdown file I can save as docs/PROGRESS.md.
+
 **What good output looks like:** A build plan where you can look at the first 3-5 items and picture your first few sessions clearly. Each item has a testable outcome — you know what "done" looks like before you start. The order should let you complete at least one full user journey within the first few sessions so you have something real to click through early. If the total session count exceeds 20-25 sessions, your spec is probably too ambitious for v1 — consider trimming the spec before starting.
 
 **Watch out for:** Session estimates that feel like human-only estimates. Push back and ask the agent to recalibrate with the assumption that an AI assistant is writing most of the code and the developer is reviewing, testing, and steering.
@@ -351,7 +353,7 @@ can't move forward, it goes here instead of getting lost in conversation.)
 
 **The prompt:**
 Using the SPEC.md in this project (see docs/SPEC.md), create an initial
-DECISIONS.md file that documents the key architectural decisions already
+docs/DECISIONS.md file that documents the key architectural decisions already
 made for this project.
 
 For each decision, use this format:
@@ -396,6 +398,8 @@ whenever a meaningful technical choice is made during a working session._
 ```
 
 **Meaningful technical choice (addendum):** Auth/storage/DB/schema changes, framework/library adoption or removal, security posture changes (tokens, hashing, session strategy), deployment/infra shifts, or pattern/architecture decisions that affect multiple features. Routine bugfixes or style tweaks do not require an entry.
+
+Format this as a clean markdown file I can save as docs/DECISIONS.md.
 
 **What good output looks like:** A document where the "Why" sections are specific and honest. The "Alternatives considered" section should never read like the AI is inventing a debate that didn't happen. And every decision should have a "Revisit if" that gives you a concrete trigger, not a vague "revisit if requirements change."
 
