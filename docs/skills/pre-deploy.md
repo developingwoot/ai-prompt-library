@@ -4,7 +4,7 @@
 
 Run a structured security sweep across the full codebase before every deployment, checking for critical vulnerabilities that must be resolved before shipping.
 
-## When Claude should use this
+## When the agent should use this
 
 - The user says "pre-deploy check", "security checklist", "is this safe to deploy", or "check before I ship"
 - A feature or milestone is complete and the user is preparing to deploy
@@ -13,7 +13,7 @@ Run a structured security sweep across the full codebase before every deployment
 
 ## Opening interview
 
-Ask these questions before proceeding. Skip any that are clearly answered by SPEC.md or CLAUDE.md.
+Ask these questions before proceeding. Skip any that are clearly answered by SPEC.md or AGENTS.md.
 
 1. **Is there a specific area of concern going into this deploy?** For example, a new auth flow, a new payment integration, or a route added since the last deploy.
    *If skipped: apply the full checklist to the entire codebase with no area prioritized.*
@@ -23,7 +23,7 @@ Ask these questions before proceeding. Skip any that are clearly answered by SPE
 
 ## Protocol
 
-Run this in a fresh conversation. Read the full codebase, [docs/SPEC.md](docs/SPEC.md) for the tech stack and auth approach, and [CLAUDE.md](CLAUDE.md) for security-related rules before starting. Adapt every check to the specific framework and database defined in the spec.
+Run this in a fresh conversation. Read the full codebase, [docs/SPEC.md](docs/SPEC.md) for the tech stack and auth approach, and [AGENTS.md](AGENTS.md) for security-related rules before starting. Adapt every check to the specific framework and database defined in the spec.
 
 Work through the checklist below in order. For every item — passing or failing — mark it explicitly. Do not skip items and do not mark anything as passing without actually checking.
 

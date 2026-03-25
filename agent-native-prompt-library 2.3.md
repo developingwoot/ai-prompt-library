@@ -1,4 +1,4 @@
-# Vibe Coding Prompt Library
+# Agent-Native Prompt Library
 
 ## The Complete AI Prompt Collection
 
@@ -16,23 +16,25 @@ Every prompt in this library follows the same format:
 
 ### Setup Note
 
-> These prompts are designed for use with Claude Code for VS Code. When a prompt references a project file like SPEC.md or PROGRESS.md, Claude already has access to your workspace — you don't need to paste file contents. Just reference the file (e.g. `@docs/SPEC.md`) or mention it by name and Claude will read it directly.
+> These prompts are designed for use with any AI coding agent (e.g., Claude Code, Cursor, Windsurf, Cline, Aider). When a prompt references a project file like SPEC.md or PROGRESS.md, provide it to the agent using your tool's native method. In tools with workspace access, the agent can read files directly — just mention the file by name or path. In chat-based interfaces, paste or upload file contents when a prompt references a project file.
 >
-> If you're using claude.ai in the browser instead, you'll need to paste or upload file contents wherever a prompt references a project file.
+> **File reference syntax varies by tool.** Claude Code uses `@docs/SPEC.md`, Cursor uses `@file`, and other tools have their own conventions. This library uses plain path references like `docs/SPEC.md` — translate to your tool's syntax as needed.
 
 ### Recommended Workflow for Building Features
 
-> When using Claude Code, use plan mode to have Claude analyze your codebase and propose changes without touching any files. Review the plan, ask questions, and adjust until you're satisfied. Then switch to act mode to let Claude implement. This gives you a hard guarantee that nothing changes until you're ready — it's more reliable than asking Claude to "wait for approval" in the prompt itself.
+> **Plan before you build.** Before any code is created or modified, have the agent analyze your codebase and propose changes without touching any files. Review the plan, ask questions, and adjust until you're satisfied. Only then let the agent implement. This gives you a hard guarantee that nothing changes until you're ready.
 >
-> This applies to any prompt where Claude is creating or modifying code — the prompts in Section 2, the test-writing prompts in Section 4, and the refactoring prompts in Section 8. Section 0 and 1 prompts generate new documents from scratch, so plan/act mode isn't necessary for those.
+> Some tools have built-in support for this workflow (e.g., Claude Code's plan/act mode toggle). If your tool does not have an explicit plan mode, instruct the agent to "propose a plan and wait for approval before writing any code" — the prompts in this library already include this instruction.
+>
+> This applies to any prompt where the agent is creating or modifying code — the prompts in Section 2, the test-writing prompts in Section 4, and the refactoring prompts in Section 8. Section 0 and 1 prompts generate new documents from scratch, so plan mode isn't necessary for those.
 
 ### Model Guide
 
 | Model label | Use it for | Examples |
 | ------------- | ------------ | ---------- |
-| **Deep/extended reasoning** | Architecture reviews, security audits, complex debugging, pre-deploy checks | (e.g., Claude Opus / any "deep thinking" tier) |
-| **Fast/code-focused** | Feature work, everyday prompting, writing code & tests, quick iterations | (e.g., Claude Sonnet / "fast code" tier) |
-| **Cross-model second opinion** | Critical code (auth, payments, PII) — fresh blind spots | (e.g., Gemini, GPT-4o) |
+| **Deep/extended reasoning** | Architecture reviews, security audits, complex debugging, pre-deploy checks | (e.g., Claude Opus, GPT-4o, Gemini Pro) |
+| **Fast/code-focused** | Feature work, everyday prompting, writing code & tests, quick iterations | (e.g., Claude Sonnet, GPT-4o mini, Gemini Flash) |
+| **Cross-model second opinion** | Critical code (auth, payments, PII) — fresh blind spots | Use a different model family than your primary agent |
 
 > Pick the closest tier available in your service; names may differ.
 
@@ -86,14 +88,14 @@ Format this as a clean markdown file I can save as docs/SPEC.md.
 
 ---
 
-### 0.2 — The Rule Extractor (Reverse-Engineering CLAUDE.md)
+### 0.2 — The Rule Extractor (Reverse-Engineering AGENTS.md)
 
 **When to use it:** Immediately after 0.1. This establishes the coding rules for future sessions by analyzing how you currently write code, ensuring AI-generated additions match your existing style.
 
 **Model:** Fast/code-focused tier
 
 **The prompt:**
-I need to generate a CLAUDE.md file for this existing project. Read the reverse-engineered spec (see @docs/SPEC.md) to understand the stack, then deeply analyze the actual codebase to understand the established patters.
+I need to generate an AGENTS.md file for this existing project. Read the reverse-engineered spec (see docs/SPEC.md) to understand the stack, then deeply analyze the actual codebase to understand the established patterns.
 
 Analyze the following across the codebase:
 
@@ -104,16 +106,22 @@ Analyze the following across the codebase:
 - State management and data fetching patterns on the frontend
 - File naming and directory structure conventions
 
-Generate a CLAUDE.md file with the following structure, but populate the "Code rules" section based on the ACTUAL conventions used in this codebase.
+Generate an AGENTS.md file with the following structure, but populate the "Code rules" section based on the ACTUAL conventions used in this codebase.
 
 Include:
 
-1. A project context section importing SPEC.md, PROGRESS.md, and
-   DECISIONS.md.
-2. The standard session start ritual (git log, git status, read PROGRESS).
+1. A project context section referencing SPEC.md, PROGRESS.md, and
+   DECISIONS.md (use your tool's file import syntax if available,
+   otherwise list them as files to read at session start).
+2. A session start ritual — steps the agent should follow before
+   writing any code:
+   - Run git log --oneline -10 to understand recent work
+   - Run git status to check current state
+   - Review PROGRESS.md to confirm what's built and what's next
+   - Ask the user what we're working on before touching any files
 3. The exact tech stack found in the code.
 4. Code rules: Document the specific patterns you found for routing, error handling, styling, and data access. Make these highly specific to this codebase (e.g., "API routes always return a standardized ApiResponse object", not just "handle errors well").
-5. Testing configuration: Scan the codebase to identify the test framework in use, the exact commands to run the full suite and a single test file, any environment setup required before tests will pass (test database, env vars, seed data), and how to interpret the output to confirm pass or failure. Document this in a Testing section of the CLAUDE.md based on what actually exists — not what should ideally exist.
+5. Testing configuration: Scan the codebase to identify the test framework in use, the exact commands to run the full suite and a single test file, any environment setup required before tests will pass (test database, env vars, seed data), and how to interpret the output to confirm pass or failure. Document this in a Testing section of the AGENTS.md based on what actually exists — not what should ideally exist.
 6. A forbidden section: Add standard protections (no unexpected package installations, no DB schema changes without asking), but add specific guardrails based on any anti-patterns you noticed we are actively avoiding in this repo.
 7. CI/CD & secrets: Never echo, print, or persist secrets in logs/artifacts. Use the platform's secret store; do not hardcode or inline secrets in build configs. Fail the pipeline if required secrets are missing. Validate env vars at startup/build time.
 8. Developer experience — read the developer background in the spec and calibrate accordingly. If the developer is early-career or learning, explain what you're doing and why as you go. If the developer is experienced, be concise and just execute.
@@ -126,22 +134,24 @@ Include:
 
 CRITICAL RULE: Do not suggest idealized "best practices" if the codebase does not actually follow them. If the codebase uses a specific, slightly unorthodox pattern, document that pattern as the rule so future AI code matches the existing codebase.
 
-Format this as a clean markdown file I can save as CLAUDE.md.
+Format this as a clean markdown file I can save as AGENTS.md in the project root.
+
+> **Tool-specific wrappers:** After generating AGENTS.md, create a wrapper file for your tool so it reads the rules automatically. For Claude Code, create a `CLAUDE.md` containing `@agents.md`. For Cursor, reference AGENTS.md in `.cursorrules`. For other tools, configure them to read AGENTS.md at session start.
 
 **What good output looks like:** A rulebook that feels incredibly familiar. It should document your exact naming conventions and architectural choices.
 
-**Watch out for:** The AI enforcing framework defaults over your custom patterns. Ensure Claude successfully extracted your custom patterns instead of falling back to its training data defaults.
+**Watch out for:** The AI enforcing framework defaults over your custom patterns. Ensure the agent successfully extracted your custom patterns instead of falling back to its training data defaults.
 
 ---
 
 ### 0.3 — State of the Union (Reverse-Engineering PROGRESS & DECISIONS)
 
-**When to use it:** After your SPEC.md and CLAUDE.md are finalized. This creates your actionable backlog and documents the architectural choices that were implicitly made when the app was first built.
+**When to use it:** After your SPEC.md and AGENTS.md are finalized. This creates your actionable backlog and documents the architectural choices that were implicitly made when the app was first built.
 
 **Model:** Fast/code-focused tier
 
 **The prompt:**
-Based on the SPEC.md (see @docs/SPEC.md) and the actual codebase, I need to generate two files: PROGRESS.md and DECISIONS.md.
+Based on the SPEC.md (see docs/SPEC.md) and the actual codebase, I need to generate two files: PROGRESS.md and DECISIONS.md.
 
 Task 1: Generate PROGRESS.md Scan the codebase for TODO comments, half-implemented endpoints, and features mentioned in the UI that don't have backend logic. Create a PROGRESS.md with:
 
@@ -173,7 +183,7 @@ Output both files clearly separated so I can save them.
 
 **What good output looks like:** The PROGRESS.md acts as an immediate hit-list of technical debt and broken windows. The DECISIONS.md accurately captures the reality of the app's foundation without judging it.
 
-**Watch out for:** Two things. First, the "In Progress" section missing items because the code looks "complete" structurally but lacks business logic. You may need to manually seed the "Not Started" section of PROGRESS.md with the new features you actually intend to build next. Second, and more important: treating the DECISIONS.md entries as documented institutional knowledge when they are inferred. Every "Why" entry produced by this prompt is Claude's best interpretation of code patterns — not a verified record of why someone made a choice. Before treating any entry as settled fact, verify it against anyone who was actually there or against any documentation that predates this onboarding process.
+**Watch out for:** Two things. First, the "In Progress" section missing items because the code looks "complete" structurally but lacks business logic. You may need to manually seed the "Not Started" section of PROGRESS.md with the new features you actually intend to build next. Second, and more important: treating the DECISIONS.md entries as documented institutional knowledge when they are inferred. Every "Why" entry produced by this prompt is the AI's best interpretation of code patterns — not a verified record of why someone made a choice. Before treating any entry as settled fact, verify it against anyone who was actually there or against any documentation that predates this onboarding process.
 
 ---
 
@@ -185,7 +195,7 @@ Output both files clearly separated so I can save them.
 
 **The prompt:**
 I have just generated foundational documentation for this existing
-codebase (SPEC.md, CLAUDE.md, DECISIONS.md).
+codebase (SPEC.md, AGENTS.md, DECISIONS.md).
 
 I need you to run a Delta Audit: compare the actual codebase against
 these newly generated standards to find where the code contradicts
@@ -194,7 +204,7 @@ itself or its implicit rules.
 Scan the codebase and flag:
 
 1. Rogue Patterns: Where does the code violate the rules established
-   in CLAUDE.md? (e.g., 90% of routes use the standard error handler,
+   in AGENTS.md? (e.g., 90% of routes use the standard error handler,
    but these 3 routes use raw try/catch blocks).
 2. Spec Drift: Are there endpoints, models, or components in the code
    that serve no discernible purpose and aren't in the SPEC.md?
@@ -224,7 +234,7 @@ Do not propose rewrites. Provide an actionable list of alignment fixes.
 
 ### 1.1 — Spec File Generator
 
-**When to use it:** Before writing a single line of code. This is a conversation, not a one-shot prompt. You provide your idea, your background, and your stack preference — then Claude interviews you before writing anything. Answer the questions thoroughly. The spec quality is directly proportional to how much you give Claude during the interview. Expect this to take 2-3 back-and-forth exchanges before you get the final spec.
+**When to use it:** Before writing a single line of code. This is a conversation, not a one-shot prompt. You provide your idea, your background, and your stack preference — then the agent interviews you before writing anything. Answer the questions thoroughly. The spec quality is directly proportional to how much you give the agent during the interview. Expect this to take 2-3 back-and-forth exchanges before you get the final spec.
 
 **Model:** Deep/extended reasoning tier — you want deep thinking here. A weak spec causes every downstream problem.
 
@@ -268,11 +278,11 @@ Format this as a clean markdown file I can save as docs/SPEC.md.
 
 **What good output looks like:**
 
-First response: 3-5 specific questions that show Claude understood your idea. If the questions are generic ("what features do you want?" or "who is your target audience?"), your initial description wasn't specific enough — add more detail and resend.
+First response: 3-5 specific questions that show the agent understood your idea. If the questions are generic ("what features do you want?" or "who is your target audience?"), your initial description wasn't specific enough — add more detail and resend.
 
 After you answer: A complete SPEC.md that would let a developer build the app without asking you a single question. Each feature is specific enough to be testable. The user journeys read like someone actually clicking through the app. The "What this is NOT" section has at least 5 items and should include things you might be tempted to add later. If any section feels vague or generic, push back on that section specifically — don't accept the whole spec just because most of it is good.
 
-**Watch out for:** Deep/extended models sometimes over-engineer v1. If the spec includes things like real-time websockets, advanced analytics, or mobile apps and you didn't ask for them, push back and trim. Also watch for the interview questions being too shallow — if Claude only asks 2 questions or they're all yes/no, tell it to go deeper.
+**Watch out for:** Deep/extended models sometimes over-engineer v1. If the spec includes things like real-time websockets, advanced analytics, or mobile apps and you didn't ask for them, push back and trim. Also watch for the interview questions being too shallow — if the agent only asks 2 questions or they're all yes/no, tell it to go deeper.
 
 ---
 
@@ -283,7 +293,7 @@ After you answer: A complete SPEC.md that would let a developer build the app wi
 **Model:** Fast/code-focused tier
 
 **The prompt:**
-Using the SPEC.md in this project (see @docs/SPEC.md), create an initial
+Using the SPEC.md in this project (see docs/SPEC.md), create an initial
 PROGRESS.md file that serves as both a checklist and a build plan.
 
 Structure it with these sections:
@@ -329,7 +339,7 @@ can't move forward, it goes here instead of getting lost in conversation.)
 
 **What good output looks like:** A build plan where you can look at the first 3-5 items and picture your first few sessions clearly. Each item has a testable outcome — you know what "done" looks like before you start. The order should let you complete at least one full user journey within the first few sessions so you have something real to click through early. If the total session count exceeds 20-25 sessions, your spec is probably too ambitious for v1 — consider trimming the spec before starting.
 
-**Watch out for:** Session estimates that feel like human-only estimates. Push back and ask Claude to recalibrate with the assumption that an AI assistant is writing most of the code and the developer is reviewing, testing, and steering.
+**Watch out for:** Session estimates that feel like human-only estimates. Push back and ask the agent to recalibrate with the assumption that an AI assistant is writing most of the code and the developer is reviewing, testing, and steering.
 
 ---
 
@@ -340,7 +350,7 @@ can't move forward, it goes here instead of getting lost in conversation.)
 **Model:** Fast/code-focused tier
 
 **The prompt:**
-Using the SPEC.md in this project (see @docs/SPEC.md), create an initial
+Using the SPEC.md in this project (see docs/SPEC.md), create an initial
 DECISIONS.md file that documents the key architectural decisions already
 made for this project.
 
@@ -387,29 +397,31 @@ whenever a meaningful technical choice is made during a working session._
 
 **Meaningful technical choice (addendum):** Auth/storage/DB/schema changes, framework/library adoption or removal, security posture changes (tokens, hashing, session strategy), deployment/infra shifts, or pattern/architecture decisions that affect multiple features. Routine bugfixes or style tweaks do not require an entry.
 
-**What good output looks like:** A document where the "Why" sections are specific and honest. The "Alternatives considered" section should never read like Claude is inventing a debate that didn't happen. And every decision should have a "Revisit if" that gives you a concrete trigger, not a vague "revisit if requirements change."
+**What good output looks like:** A document where the "Why" sections are specific and honest. The "Alternatives considered" section should never read like the AI is inventing a debate that didn't happen. And every decision should have a "Revisit if" that gives you a concrete trigger, not a vague "revisit if requirements change."
 
-**Watch out for:** Two things. First, Claude writing "Revisit if requirements change" on every decision — that's meaningless. Push back and ask for specific triggers tied to your app. Second, the "Alternatives considered" section sounding like a blog post comparing frameworks. Honesty in this file saves you from second-guessing yourself later.
+**Watch out for:** Two things. First, the agent writing "Revisit if requirements change" on every decision — that's meaningless. Push back and ask for specific triggers tied to your app. Second, the "Alternatives considered" section sounding like a blog post comparing frameworks. Honesty in this file saves you from second-guessing yourself later.
 
 ---
 
-### 1.4 — CLAUDE.md Scaffolding
+### 1.4 — AGENTS.md Scaffolding
 
-**When to use it:** After your SPEC.md (Prompt 1.1), PROGRESS.md (Prompt 1.2), and DECISIONS.md (Prompt 1.3) are all created. This creates the instruction file Claude reads automatically at the start of every session in Claude Code. It references all three files, so they need to exist first. Your SPEC.md must include your tech stack and developer background — this prompt depends on both.
+**When to use it:** After your SPEC.md (Prompt 1.1), PROGRESS.md (Prompt 1.2), and DECISIONS.md (Prompt 1.3) are all created. This creates the instruction file your AI agent reads at the start of every session. It references all three files, so they need to exist first. Your SPEC.md must include your tech stack and developer background — this prompt depends on both.
 
 **Model:** Fast/code-focused tier
 
 **The prompt:**
-Using the SPEC.md in this project (see @docs/SPEC.md), create a CLAUDE.md
-file for this project that Claude Code will read automatically at the
-start of every session. Include:
+Using the SPEC.md in this project (see docs/SPEC.md), create an AGENTS.md
+file for this project. This file contains the rules and context your AI
+agent reads at the start of every session. Include:
 
-1. A project context section that imports:
-   @./docs/SPEC.md
-   @./docs/PROGRESS.md
-   @./docs/DECISIONS.md
+1. A project context section that references the following files (use
+   your tool's import/include syntax if available, otherwise list them
+   as files to read at session start):
+   - docs/SPEC.md
+   - docs/PROGRESS.md
+   - docs/DECISIONS.md
 
-2. A session start ritual — steps Claude should follow before writing
+2. A session start ritual — steps the agent should follow before writing
    any code:
    - Run git log --oneline -10 to understand recent work
    - Run git status to check current state
@@ -433,7 +445,7 @@ start of every session. Include:
    run the full suite and a single test file, and any environment setup
    that will be needed (test database, env vars, seed data). Note that
    this section should be updated once the test infrastructure is
-   actually in place — at CLAUDE.md creation time, tests don't exist yet.
+   actually in place — at AGENTS.md creation time, tests don't exist yet.
 
 6. A forbidden section:
    - Before installing any new package or dependency, explain why it's
@@ -466,12 +478,17 @@ start of every session. Include:
    - Update DECISIONS.md if any architectural decisions were made
    - Recommend what to tackle first in the next session
 
-Format this as a clean markdown file I can save as CLAUDE.md in the
+Format this as a clean markdown file I can save as AGENTS.md in the
 project root.
 
-**What good output looks like:** A CLAUDE.md that reads like a confident brief tailored to your specific stack. The code rules should reference your actual frameworks and languages, not generic boilerplate. The developer experience section should reflect your skill level accurately — if you said you're a beginner in the spec and the CLAUDE.md doesn't mention explanations, push back.
+> **Tool-specific wrappers:** After generating AGENTS.md, create a wrapper file so your tool reads it automatically at session start:
+> - **Claude Code:** Create a `CLAUDE.md` in the project root containing `@agents.md`
+> - **Cursor:** Reference AGENTS.md in your `.cursorrules` file
+> - **Other tools:** Configure your AI agent to read AGENTS.md at session start using whatever mechanism your tool provides
 
-**Watch out for:** The forbidden section being too generic. It should include at least one rule specific to your stack. If everything in the forbidden section could apply to any project, ask Claude to add stack-specific guardrails.
+**What good output looks like:** An AGENTS.md that reads like a confident brief tailored to your specific stack. The code rules should reference your actual frameworks and languages, not generic boilerplate. The developer experience section should reflect your skill level accurately — if you said you're a beginner in the spec and the AGENTS.md doesn't mention explanations, push back.
+
+**Watch out for:** The forbidden section being too generic. It should include at least one rule specific to your stack. If everything in the forbidden section could apply to any project, ask the agent to add stack-specific guardrails.
 
 ---
 
@@ -484,7 +501,7 @@ project root.
 **The prompt:**
 I need help choosing a tech stack for my project.
 
-Here is my app description (or see @docs/SPEC.md if the spec is already
+Here is my app description (or see docs/SPEC.md if the spec is already
 started):
 [describe your app in 2-3 sentences, or reference your spec file]
 
@@ -502,7 +519,7 @@ My constraints:
 - [e.g. "I want to stay in one language for frontend and backend" or
   "I need this deployed for free or very cheap" or "I want managed auth
   so I don't have to build login from scratch"]
-- I'll be using AI assistance (Claude) to write most of the code, so I
+- I'll be using AI assistance to write most of the code, so I
   need a stack where AI tools can be most effective
 - [add any other constraints]
 
@@ -513,7 +530,7 @@ database client, auth approach, deployment), give me:
    skill level. Prioritize tools I can debug myself when AI gets stuck
    over tools that are technically optimal but unfamiliar to me.
 2. Why AI assistance will be effective with this choice — not whether
-   Claude "has training data on it" but whether the tool has mature
+   the AI "has training data on it" but whether the tool has mature
    documentation, a large ecosystem of examples, and well-established
    patterns that AI tools can draw from.
 3. Two alternatives, each with a clear tradeoff:
@@ -534,7 +551,7 @@ something marginally better that I've never used.
 
 **What good output looks like:** A recommendation where every choice references your specific app and your specific experience. The two alternatives per layer should feel like real choices with real tradeoffs, not a winner and two strawmen. The summary paragraph at the end should make you feel like the stack is a coherent system, not six independent decisions.
 
-**Watch out for:** Three things. First, Claude recommending the "best" tool over the tool you already know. In vibe coding, your ability to debug when AI gets stuck matters more than technical optimality. Second, vague AI-effectiveness reasoning like "it's popular" or "there's a lot of content." Push for specifics. Third, Deep/extended models sometimes recommend newer tools it finds interesting. Ask for a more established alternative if needed.
+**Watch out for:** Three things. First, the agent recommending the "best" tool over the tool you already know. In AI-assisted development, your ability to debug when AI gets stuck matters more than technical optimality. Second, vague AI-effectiveness reasoning like "it's popular" or "there's a lot of content." Push for specifics. Third, Deep/extended models sometimes recommend newer tools they find interesting. Ask for a more established alternative if needed.
 
 ---
 
@@ -544,7 +561,7 @@ something marginally better that I've never used.
 
 ### 2.1 — Feature Implementation
 
-**When to use it:** Every time you want to build a new feature. This is your workhorse prompt. Use plan mode first to have Claude propose its approach without touching files, then switch to act mode after you've reviewed and approved.
+**When to use it:** Every time you want to build a new feature. This is your workhorse prompt. Use plan mode first to have the agent propose its approach without touching files, then review and approve before implementation begins.
 
 **Model:** Fast/code-focused tier
 
@@ -553,15 +570,15 @@ I need to implement [feature name].
 
 Before writing any code, orient yourself:
 
-- Read the spec (see @docs/SPEC.md) and find the section describing
+- Read the spec (see docs/SPEC.md) and find the section describing
   this feature
-- Check PROGRESS.md (see @docs/PROGRESS.md) to confirm that any
+- Check PROGRESS.md (see docs/PROGRESS.md) to confirm that any
   dependencies this feature requires are marked as Implemented. If
   anything this feature depends on isn't built yet, stop and tell me
   before going further.
 - Scan the existing codebase to understand what files exist, what
   patterns are established, and what you can reuse
-- Review CLAUDE.md for any rules that are especially relevant to this
+- Review AGENTS.md for any rules that are especially relevant to this
   feature — if this touches auth, payments, or sensitive data, call
   out the specific rules that apply
 
@@ -576,7 +593,7 @@ Then give me your plan:
 
 After I approve the plan and switch to act mode:
 
-1. Implement the feature following the rules in CLAUDE.md
+1. Implement the feature following the rules in AGENTS.md
 2. Before running tests, ensure required setup (migrations, seed data, env vars) is applied. If setup is missing, stop and ask whether to run migrations/seed in this session; don't mark tests as failed due to missing setup.
 3. Run existing tests to confirm nothing is broken by the changes
 4. If no tests exist yet, explicitly call this out and propose a minimal smoke/regression test set before or alongside implementation. Do not skip the "run tests" step; instead, note absence and recommend creating baseline tests.
@@ -589,17 +606,17 @@ Do not modify any files outside the scope of this feature.
 
 **What good output looks like:**
 
-In plan mode: A clear, scoped proposal that shows Claude understands the codebase context. It should reference specific existing files it intends to work with, not just describe things generically. You should be able to read the plan and know exactly what's going to change before anything changes.
+In plan mode: A clear, scoped proposal that shows the agent understands the codebase context. It should reference specific existing files it intends to work with, not just describe things generically. You should be able to read the plan and know exactly what's going to change before anything changes.
 
 In act mode: Clean implementation that follows the plan. Existing tests still pass. New tests cover the happy path, invalid inputs, and edge cases. The manual testing instructions should let you verify the feature works in under five minutes.
 
-**Watch out for:** Three things. First, Claude skipping the orient step and jumping straight to a plan based on the feature name alone. Second, the plan being too ambitious — if it proposes modifying more than 5-6 files for a single feature, the feature might need to be broken into smaller pieces. Third, after implementation, Claude skipping the step of running existing tests.
+**Watch out for:** Three things. First, the agent skipping the orient step and jumping straight to a plan based on the feature name alone. Second, the plan being too ambitious — if it proposes modifying more than 5-6 files for a single feature, the feature might need to be broken into smaller pieces. Third, after implementation, the agent skipping the step of running existing tests.
 
 ---
 
 ### 2.2 — Database Schema Design
 
-**When to use it:** When designing your database schema before writing any API routes or business logic. This is a foundational decision — get it right early. Use plan mode to review the schema before Claude writes any migration files.
+**When to use it:** When designing your database schema before writing any API routes or business logic. This is a foundational decision — get it right early. Use plan mode to review the schema before the agent writes any migration files.
 
 **Model:** Deep/extended reasoning tier — schema decisions are hard to undo.
 
@@ -608,11 +625,11 @@ I need to design the database schema for this project.
 
 Before designing anything, orient yourself:
 
-- Read the spec (see @docs/SPEC.md) for the data models, features, and
+- Read the spec (see docs/SPEC.md) for the data models, features, and
   tech stack — the database engine and ORM are defined there
 - Read the user journeys in the spec carefully. The schema needs to
   support every step of every journey efficiently
-- Check PROGRESS.md (see @docs/PROGRESS.md) to understand build order
+- Check PROGRESS.md (see docs/PROGRESS.md) to understand build order
   — which models will be used first and which won't be touched for
   several sessions
 
@@ -649,17 +666,17 @@ spec.
 
 **What good output looks like:**
 
-In plan mode: A schema where every model traces back to a feature or user journey in the spec. The validation walkthrough should show you the actual queries Claude expects to run against each model. Models marked as provisional should be clearly separated from the ones you'll use immediately.
+In plan mode: A schema where every model traces back to a feature or user journey in the spec. The validation walkthrough should show you the actual queries the agent expects to run against each model. Models marked as provisional should be clearly separated from the ones you'll use immediately.
 
 In act mode: The schema written as a migration file in whatever ORM your project uses, ready to run. It should follow that tool's conventions — not generic SQL patterns forced into an ORM.
 
-**Watch out for:** Four things. First, Claude adding models for features that are out of scope. Second, missing indexes on foreign keys and fields used in filtering. Third, the schema being designed in isolation from queries. Fourth, Claude defaulting to patterns from a different ORM than the one in your spec.
+**Watch out for:** Four things. First, the agent adding models for features that are out of scope. Second, missing indexes on foreign keys and fields used in filtering. Third, the schema being designed in isolation from queries. Fourth, the agent defaulting to patterns from a different ORM than the one in your spec.
 
 ---
 
 ### 2.3 — API Endpoint Implementation
 
-**When to use it:** When building a specific API route or group of related routes. This builds on the workflow established in Prompt 2.1 with API-specific guidance. Use plan mode to review the route design before Claude writes any code.
+**When to use it:** When building a specific API route or group of related routes. This builds on the workflow established in Prompt 2.1 with API-specific guidance. Use plan mode to review the route design before the agent writes any code.
 
 **Model:** Fast/code-focused tier
 
@@ -669,9 +686,9 @@ GET /api/projects, GET /api/projects/:id]
 
 Before writing any code, orient yourself:
 
-- Read the spec (see @docs/SPEC.md) to understand what these endpoints
+- Read the spec (see docs/SPEC.md) to understand what these endpoints
   need to do and which user journeys they support
-- Check PROGRESS.md (see @docs/PROGRESS.md) to confirm that
+- Check PROGRESS.md (see docs/PROGRESS.md) to confirm that
   dependencies for these routes are built — especially the database
   schema and any auth middleware
 - If the database schema was designed with query validation in Prompt
@@ -680,7 +697,7 @@ Before writing any code, orient yourself:
 - Scan the existing codebase for established patterns. If routes already
   exist in this project, match their structure exactly. Consistency
   matters more than any single route being "better."
-- Review CLAUDE.md for rules relevant to API development
+- Review AGENTS.md for rules relevant to API development
 
 Then give me your plan:
 
@@ -697,7 +714,7 @@ Then give me your plan:
 
 After I approve the plan and switch to act mode:
 
-1. Implement the endpoints following the conventions in CLAUDE.md and
+1. Implement the endpoints following the conventions in AGENTS.md and
    any patterns already established in the codebase
 2. Use the validation and error handling approach appropriate to the
    framework in the spec — do not introduce a different library or
@@ -724,13 +741,13 @@ In plan mode: A route-by-route breakdown showing the request shape, response sha
 
 In act mode: Routes that are indistinguishable in style from any existing routes in the codebase. Error responses are identical in shape across every endpoint. Tests include the forbidden access case.
 
-**Watch out for:** Five things. First, Claude introducing a different validation or error handling library than what's already in the project. Second, missing object-level authorization. Third, inconsistency with existing routes. Fourth, Claude wrapping every line in try/catch rather than using a centralized error handling middleware. Fifth, tests that only check status codes without checking response bodies.
+**Watch out for:** Five things. First, the agent introducing a different validation or error handling library than what's already in the project. Second, missing object-level authorization. Third, inconsistency with existing routes. Fourth, the agent wrapping every line in try/catch rather than using a centralized error handling middleware. Fifth, tests that only check status codes without checking response bodies.
 
 ---
 
 ### 2.4 — UI Component Implementation
 
-**When to use it:** When building a UI component or a full page. This builds on the workflow established in Prompt 2.1 with frontend-specific guidance. Use plan mode to review the component design before Claude writes any code.
+**When to use it:** When building a UI component or a full page. This builds on the workflow established in Prompt 2.1 with frontend-specific guidance. Use plan mode to review the component design before the agent writes any code.
 
 **Model:** Fast/code-focused tier
 
@@ -741,17 +758,17 @@ What it does: [describe the UI and behavior]
 
 Before writing any code, orient yourself:
 
-- Read the spec (see @docs/SPEC.md) to understand where this component
+- Read the spec (see docs/SPEC.md) to understand where this component
   fits. Find which user journey it belongs to — what screen comes before
   it, what user action leads here, and where the user goes next.
-- Check PROGRESS.md (see @docs/PROGRESS.md) to confirm that any API
+- Check PROGRESS.md (see docs/PROGRESS.md) to confirm that any API
   endpoints or data this component depends on are already built
 - Scan the existing codebase for established frontend patterns. If
   components already exist, match their structure exactly — same file
   organization, same naming conventions, same styling approach, same
   state management patterns. Do not introduce a new pattern alongside
   an existing one.
-- Review CLAUDE.md for any frontend-specific rules
+- Review AGENTS.md for any frontend-specific rules
 
 Then give me your plan:
 
@@ -782,7 +799,7 @@ Design considerations — address each of these in your plan:
 
 After I approve the plan and switch to act mode:
 
-1. Implement the component following the conventions in CLAUDE.md and
+1. Implement the component following the conventions in AGENTS.md and
    any patterns already established in the codebase
 2. Use the framework, styling approach, and state management appropriate
    to the tech stack in the spec — do not use patterns or terminology
@@ -807,13 +824,13 @@ In plan mode: A proposal that clearly places the component in the context of a u
 
 In act mode: A component that is visually and structurally consistent with any existing components in the project. All four states are handled and look intentional, not like afterthoughts. The empty state in particular should feel like a designed part of the app, not a blank page. Tests verify real user interactions, not just that the component mounts without crashing.
 
-**Watch out for:** Five things. First, Claude using patterns from a different framework than the one in your spec. Second, the empty state being ignored or treated as just a paragraph of text. Third, accessibility being treated as optional or skipped entirely. Fourth, styling that doesn't match existing components. Fifth, components that fetch data in a way that doesn't match the framework's conventions.
+**Watch out for:** Five things. First, the agent using patterns from a different framework than the one in your spec. Second, the empty state being ignored or treated as just a paragraph of text. Third, accessibility being treated as optional or skipped entirely. Fourth, styling that doesn't match existing components. Fifth, components that fetch data in a way that doesn't match the framework's conventions.
 
 ---
 
 ### 2.5 — Authentication Implementation
 
-**When to use it:** When building the auth system. This should be one of the first features you build, since almost everything else depends on it. Use plan mode to review the entire auth design before Claude writes any code. Auth is not the place to skip the plan step.
+**When to use it:** When building the auth system. This should be one of the first features you build, since almost everything else depends on it. Use plan mode to review the entire auth design before the agent writes any code. Auth is not the place to skip the plan step.
 
 **Model:** Deep/extended reasoning tier — auth is not the place to cut corners.
 
@@ -822,7 +839,7 @@ I need to implement authentication for this project.
 
 Before writing any code, orient yourself:
 
-- Read the spec (see @docs/SPEC.md) for the auth strategy defined in
+- Read the spec (see docs/SPEC.md) for the auth strategy defined in
   the tech stack. Understand whether this project uses a managed auth
   service (like Supabase Auth, Clerk, NextAuth, Lucia) or requires a
   custom implementation (like JWT with bcrypt).
@@ -834,12 +851,12 @@ Before writing any code, orient yourself:
 - Check the database schema (from Prompt 2.2) to confirm the user
   model has everything auth needs. If fields are missing, list what
   needs to be added before proceeding.
-- Check PROGRESS.md (see @docs/PROGRESS.md) to confirm the database
+- Check PROGRESS.md (see docs/PROGRESS.md) to confirm the database
   schema is built and migrated
 - Scan the existing codebase for any patterns already established —
   error response shapes, validation approach, file organization. Auth
   routes should be consistent with any existing routes from 2.3.
-- Review CLAUDE.md for security-related rules
+- Review AGENTS.md for security-related rules
 
 Then give me your plan. Cover all of these:
 
@@ -881,7 +898,7 @@ Middleware design:
 
 After I approve the plan and switch to act mode:
 
-1. Implement auth following the approved plan and CLAUDE.md rules
+1. Implement auth following the approved plan and AGENTS.md rules
 2. Every security decision you make should be explained in a comment
    next to the code — not what the code does, but why the security
    choice was made
@@ -909,11 +926,11 @@ judgment call, document it.
 
 **What good output looks like:**
 
-In plan mode: The first thing you should see is Claude confirming whether this is a managed service integration or a custom implementation, based on what's in the spec. Every item in the security plan should have a specific answer, not "will be handled."
+In plan mode: The first thing you should see is the agent confirming whether this is a managed service integration or a custom implementation, based on what's in the spec. Every item in the security plan should have a specific answer, not "will be handled."
 
 In act mode: Auth code where the security comments explain *why*, not *what*. "// bcrypt cost 12: balances security with response time under 500ms" is useful. The tests should include both wrong-password and wrong-email cases with an assertion that the error messages are identical.
 
-**Watch out for:** Six things. First, Claude building custom JWT auth when the spec says to use a managed service. Second, error messages that differ between "wrong password" and "email not found". Third, the password field appearing in any API response. Fourth, tokens stored in localStorage without any mention of XSS risk, or cookies without httpOnly and secure flags. Fifth, missing rate limiting. Sixth, if using custom auth, the absence of a refresh token strategy.
+**Watch out for:** Six things. First, the agent building custom JWT auth when the spec says to use a managed service. Second, error messages that differ between "wrong password" and "email not found". Third, the password field appearing in any API response. Fourth, tokens stored in localStorage without any mention of XSS risk, or cookies without httpOnly and secure flags. Fifth, missing rate limiting. Sixth, if using custom auth, the absence of a refresh token strategy.
 
 ---
 
@@ -971,9 +988,9 @@ the plan.
 
 **What good output looks like:**
 
-In plan mode: An explanation that makes you feel like Claude genuinely understands the file, not just that it read it. The dependency trace should name specific files and functions. The fragility assessment should identify concrete risks. The plan itself should be conservative.
+In plan mode: An explanation that makes you feel like the agent genuinely understands the file, not just that it read it. The dependency trace should name specific files and functions. The fragility assessment should identify concrete risks. The plan itself should be conservative.
 
-**Watch out for:** Four things. First, Claude rushing through the explanation to get to the plan. Second, Claude saying "this file is imported by several other files" without naming them. Third, Claude proposing to refactor the file while making your change. Fourth, if no tests exist and Claude doesn't mention that, it's a red flag.
+**Watch out for:** Four things. First, the agent rushing through the explanation to get to the plan. Second, the agent saying "this file is imported by several other files" without naming them. Third, the agent proposing to refactor the file while making your change. Fourth, if no tests exist and the agent doesn't mention that, it's a red flag.
 
 ---
 
@@ -983,7 +1000,7 @@ In plan mode: An explanation that makes you feel like Claude genuinely understan
 
 ### 3.1 — Standard Code Review
 
-**When to use it:** After completing a feature, before committing. Run this in a fresh Claude conversation — not the same session that wrote the code. The model that wrote the code is biased toward its own output and will overlook the same edge cases it missed when generating.
+**When to use it:** After completing a feature, before committing. Run this in a fresh conversation — not the same session that wrote the code. The model that wrote the code is biased toward its own output and will overlook the same edge cases it missed when generating.
 
 **Model:** Deep/extended reasoning tier in a **fresh conversation.**
 
@@ -995,8 +1012,8 @@ this code — be ruthless.
 
 Before reviewing, read:
 
-- The project rules (see @CLAUDE.md)
-- The spec (see @docs/SPEC.md) — specifically the section describing
+- The project rules (see AGENTS.md)
+- The spec (see docs/SPEC.md) — specifically the section describing
   the feature this code implements
 - The code to review: (see @[list the files or directory to review])
 
@@ -1018,8 +1035,8 @@ Review in this priority order:
      handle?
    - Does the code do anything the spec doesn't ask for?
 
-3. CLAUDE.md rule violations:
-   - Check every rule in CLAUDE.md against the code
+3. AGENTS.md rule violations:
+   - Check every rule in AGENTS.md against the code
    - Flag any violation with the specific rule being broken
 
 4. Error handling:
@@ -1066,11 +1083,11 @@ Rules for your review:
 
 ### 3.2 — Cross-Model Security Review
 
-**When to use it:** Before deploying anything with authentication, payments, or sensitive user data. This is the one prompt in the library you deliberately run outside of your normal Claude setup. The point is to get a genuinely different perspective from a different model family.
+**When to use it:** Before deploying anything with authentication, payments, or sensitive user data. This is the one prompt in the library you deliberately run outside of your primary AI agent. The point is to get a genuinely different perspective from a different model family.
 
 **How to run this practically:** Open ChatGPT, Gemini, or another AI tool in your browser. Copy the prompt below, paste in the relevant code files and the context block, and send it.
 
-**Model:** Gemini or GPT-4o — specifically NOT Claude.
+**Model:** Use a different model family than your primary agent (e.g., if you primarily use Claude, try GPT-4o or Gemini, and vice versa).
 
 **The prompt:**
 You are a security engineer reviewing code written by an AI assistant.
@@ -1136,7 +1153,7 @@ codebase, just the security-critical parts.]
 
 ### 3.3 — Architecture Review
 
-**When to use it:** At the end of each major milestone — after auth is done, after the core API is done, before building the frontend, before deployment. Not for individual files or features. This is a review-only exercise — Claude should not modify any files during this process.
+**When to use it:** At the end of each major milestone — after auth is done, after the core API is done, before building the frontend, before deployment. Not for individual files or features. This is a review-only exercise — the agent should not modify any files during this process.
 
 **Model:** Deep/extended reasoning tier with extended thinking enabled, in a **fresh conversation.**
 
@@ -1153,12 +1170,12 @@ The next phase I'm about to start: [e.g. "building the frontend",
 
 Before reviewing, read the full project context:
 
-- The spec (see @docs/SPEC.md) — understand what this app does, who
+- The spec (see docs/SPEC.md) — understand what this app does, who
   the users are, and what the remaining user journeys require
-- The project rules (see @CLAUDE.md)
-- The decision log (see @docs/DECISIONS.md) — understand what was
+- The project rules (see AGENTS.md)
+- The decision log (see docs/DECISIONS.md) — understand what was
   decided and the reasoning behind each choice
-- The build progress (see @docs/PROGRESS.md) — understand what's
+- The build progress (see docs/PROGRESS.md) — understand what's
   been built, what's next, and whether any patterns are emerging
 - The project structure — scan the full codebase to understand how
   files are organized, where logic lives, and how the pieces connect
@@ -1190,7 +1207,7 @@ Evaluate in this order:
      same problem?
    - Are naming conventions consistent across the codebase?
 
-4. CLAUDE.md compliance at scale:
+4. AGENTS.md compliance at scale:
    - Check the project rules against the codebase systemically.
    - Are rules being followed everywhere, or has drift crept in?
    - If rules are being violated consistently, is it because the
@@ -1263,13 +1280,13 @@ Read the file (see @[filepath]) and tell me:
 4. Is there anything a developer would flag in a code review?
 5. One thing you'd change if this were your codebase
 
-Check the project rules (see @CLAUDE.md) for anything obviously violated.
+Check the project rules (see AGENTS.md) for anything obviously violated.
 
 Keep it short. 3-5 specific observations max.
 
 **What good output looks like:** 3-5 short, specific observations. If it comes back clean, that's useful signal too. Each observation should be actionable.
 
-**Watch out for:** Two things. First, using this as a substitute for the full Deep/extended review (3.1) on important code. Second, Claude giving generic praise instead of flagging real issues.
+**Watch out for:** Two things. First, using this as a substitute for the full Deep/extended review (3.1) on important code. Second, the agent giving generic praise instead of flagging real issues.
 
 ---
 
@@ -1279,7 +1296,7 @@ Keep it short. 3-5 specific observations max.
 
 ### 4.1 — Write Tests for Code Just Built
 
-**When to use it:** Immediately after building a feature, in the same session. Claude still has the full context of what it just wrote.
+**When to use it:** Immediately after building a feature, in the same session. The agent still has the full context of what it just wrote.
 
 **Model:** Fast/code-focused tier
 
@@ -1288,7 +1305,7 @@ You just built [feature name]. Now write tests for it.
 
 Before writing tests, orient yourself:
 
-- Review the spec (see @docs/SPEC.md) for the expected behavior of
+- Review the spec (see docs/SPEC.md) for the expected behavior of
   this feature — the tests should verify the spec, not just the
   implementation
 - Check what testing framework and patterns are already established
@@ -1299,7 +1316,7 @@ Before writing tests, orient yourself:
 Testing requirements:
 
 - Use the testing framework defined in the project (check existing
-  tests or CLAUDE.md for the standard)
+  tests or AGENTS.md for the standard)
 - Test behavior, not implementation — tests should pass even if the
   internal implementation changes
 - Every test name should complete the sentence "it should..."
@@ -1323,7 +1340,7 @@ implementation too and tell me what you found.
 
 **What good output looks like:** Test names that read like specifications. A test file where you could delete the implementation and rebuild it correctly using only the tests as a guide.
 
-**Watch out for:** Three things. First, tests that mock everything and test nothing. Second, tests that only check status codes or "truthy" values without verifying the actual response shape and data. Third, Claude using a different testing framework or pattern than what's already established in the project.
+**Watch out for:** Three things. First, tests that mock everything and test nothing. Second, tests that only check status codes or "truthy" values without verifying the actual response shape and data. Third, the agent using a different testing framework or pattern than what's already established in the project.
 
 ---
 
@@ -1358,9 +1375,9 @@ Then check for missing tests:
 I want tests that would catch real bugs, not tests that exist to show
 green checkmarks.
 
-**What good output looks like:** Claude identifying at least 2-3 tests that need to be strengthened, and rewriting them with meaningful assertions. The "missing tests" section should identify at least one case you hadn't thought of.
+**What good output looks like:** The agent identifying at least 2-3 tests that need to be strengthened, and rewriting them with meaningful assertions. The "missing tests" section should identify at least one case you hadn't thought of.
 
-**Watch out for:** Claude defending all the tests as fine. If you want to pressure-test this, ask Claude directly: "Describe a bug in this implementation that these tests would NOT catch." If it can easily name several, the tests need work.
+**Watch out for:** The agent defending all the tests as fine. If you want to pressure-test this, ask directly: "Describe a bug in this implementation that these tests would NOT catch." If it can easily name several, the tests need work.
 
 ---
 
@@ -1373,7 +1390,7 @@ green checkmarks.
 **The prompt:**
 Write an end-to-end test for the following user journey from the spec.
 
-Read the spec (see @docs/SPEC.md) and find user journey: [name or
+Read the spec (see docs/SPEC.md) and find user journey: [name or
 number of the journey, or describe it]
 
 Before writing the test:
@@ -1428,8 +1445,8 @@ Read:
 
 - The source files in the codebase
 - The existing test files
-- The spec (see @docs/SPEC.md) for what behavior should be tested
-- PROGRESS.md (see @docs/PROGRESS.md) for what features are marked
+- The spec (see docs/SPEC.md) for what behavior should be tested
+- PROGRESS.md (see docs/PROGRESS.md) for what features are marked
   as implemented
 
 For each implemented feature, tell me:
@@ -1460,7 +1477,7 @@ integration, or e2e) and roughly how many tests are needed.
 
 **What good output looks like:** A clear picture of where you're covered and where you're exposed. The Critical untested paths should be surprising — if you already knew they were untested, you probably would have written them.
 
-**Watch out for:** Claude listing every possible test without prioritizing. The point isn't 100% coverage — it's knowing where the dangerous gaps are. If the list has 50 items and they're all "Should have," the prioritization isn't working. Push back and ask: "Which 5 untested paths are most likely to cause a production bug?"
+**Watch out for:** The agent listing every possible test without prioritizing. The point isn't 100% coverage — it's knowing where the dangerous gaps are. If the list has 50 items and they're all "Should have," the prioritization isn't working. Push back and ask: "Which 5 untested paths are most likely to cause a production bug?"
 
 ---
 
@@ -1477,8 +1494,8 @@ integration, or e2e) and roughly how many tests are needed.
 **The prompt:**
 Run a pre-deployment security checklist on this project.
 
-Read the full codebase, the spec (see @docs/SPEC.md) for the tech
-stack and auth approach, and CLAUDE.md for security-related rules.
+Read the full codebase, the spec (see docs/SPEC.md) for the tech
+stack and auth approach, and AGENTS.md for security-related rules.
 
 Check for these issues, organized by severity. Adapt the checks to
 the specific framework and database in the spec:
@@ -1547,7 +1564,7 @@ full checklist, not just the failures.
 Audit this project against the OWASP Top 10 web application security
 risks.
 
-Read the full codebase, the spec (see @docs/SPEC.md), and CLAUDE.md
+Read the full codebase, the spec (see docs/SPEC.md), and AGENTS.md
 before starting.
 
 For each OWASP category, tell me:
@@ -1585,7 +1602,7 @@ Low findings, and a recommended fix order.
 
 **What good output looks like:** A structured report organized by OWASP category where every category gets a clear verdict. The A01 (Broken Access Control) section should show you the actual queries for each route and confirm they scope to the authenticated user — this should be the longest section. Most well-built apps will have no Critical findings but several Medium ones. That's normal and expected.
 
-**Watch out for:** Three things. First, the audit skipping or rushing through A01 (Broken Access Control). Second, false positives on A03 (Injection) when using an ORM. Third, A06 (Vulnerable Components) being hand-waved — Claude should recommend running the package manager's audit command rather than guessing about dependency vulnerabilities.
+**Watch out for:** Three things. First, the audit skipping or rushing through A01 (Broken Access Control). Second, false positives on A03 (Injection) when using an ORM. Third, A06 (Vulnerable Components) being hand-waved — the agent should recommend running the package manager's audit command rather than guessing about dependency vulnerabilities.
 
 ---
 
@@ -1628,7 +1645,7 @@ Provide:
 
 **What good output looks like:** A clean .env.example file you can commit immediately. The frontend exposure check should be specific to your framework. Any secrets accessible on the frontend should be treated as a Critical issue. The startup validation check should identify any variables that would cause a silent failure if missing.
 
-**Watch out for:** Three things. First, Claude missing variables that are only referenced through a config file or utility. Second, the .env.example including actual values that look like real credentials (even if they're not). Third, framework-specific exposure rules being wrong.
+**Watch out for:** Three things. First, the agent missing variables that are only referenced through a config file or utility. Second, the .env.example including actual values that look like real credentials (even if they're not). Third, framework-specific exposure rules being wrong.
 
 ---
 
@@ -1655,12 +1672,12 @@ I have a bug I need help debugging.
 [List anything you've already attempted. "Nothing" is a valid answer.]
 
 **Relevant code:**
-(see @[filepath] — point Claude to the specific file(s) involved,
+(see [filepath] — point the agent to the specific file(s) involved,
 not the entire codebase)
 
 **Environment:**
 
-- Tech stack: [from your spec, or say "see @docs/SPEC.md"]
+- Tech stack: [from your spec, or say "see docs/SPEC.md"]
 - Dev or prod: [dev/prod]
 - Did this ever work, or has it never worked? [answer]
 - What changed right before it broke? [last thing you built or
@@ -1674,23 +1691,23 @@ Before suggesting a fix:
 4. Keep the fix as small as possible — change only what's necessary
    to resolve the error
 
-**What good output looks like:** An explanation of root cause before any code. If Claude gives you a fix without explaining why the error happened, you'll hit the same pattern again next week. The explanation should be specific enough that you learn something.
+**What good output looks like:** An explanation of root cause before any code. If the agent gives you a fix without explaining why the error happened, you'll hit the same pattern again next week. The explanation should be specific enough that you learn something.
 
-**Watch out for:** Three things. First, Claude suggesting fixes that change a lot of code when the error is pointing to one specific place. Second, Claude guessing without reading the actual file. Third, circular debugging — if you've tried Claude's fix and it didn't work, don't just re-explain the same error. Tell Claude specifically what you tried, what happened, and ask for alternative hypotheses.
+**Watch out for:** Three things. First, the agent suggesting fixes that change a lot of code when the error is pointing to one specific place. Second, the agent guessing without reading the actual file. Third, circular debugging — if you've tried the agent's fix and it didn't work, don't just re-explain the same error. Tell the agent specifically what you tried, what happened, and ask for alternative hypotheses.
 
 ---
 
 ### 6.2 — Fresh Context Debug
 
-**When to use it:** When you've been debugging for 30+ minutes in the same session and you're going in circles. Context collapse is probably making things worse — Claude is stuck in the same mental model that created the bug. Start a fresh conversation.
+**When to use it:** When you've been debugging for 30+ minutes in the same session and you're going in circles. Context collapse is probably making things worse — the agent is stuck in the same mental model that created the bug. Start a fresh conversation.
 
 **Model:** Fast/code-focused tier — **fresh conversation.**
 
 **The prompt:**
 I've been stuck on a bug and I'm starting fresh with a clean context.
 
-Project context: (see @docs/SPEC.md for what this app does,
-see @CLAUDE.md for the tech stack and rules)
+Project context: (see docs/SPEC.md for what this app does,
+see AGENTS.md for the tech stack and rules)
 
 The bug:
 
@@ -1699,7 +1716,7 @@ The bug:
 - First appeared: [when — after a specific change, or always been there]
 
 I have NOT been able to fix it by: [list what you tried — be specific
-so Claude doesn't suggest the same things]
+so the agent doesn't suggest the same things]
 
 I think the problem might be in: [your best guess at which file or
 layer — or "I have no idea"]
@@ -1713,9 +1730,9 @@ telling me what's wrong:
 
 Do not suggest anything I've already tried (listed above).
 
-**What good output looks like:** Claude asking for specific files rather than guessing. A fresh perspective often spots what you've been staring past. The hypothesis should be different from what you've been investigating.
+**What good output looks like:** The agent asking for specific files rather than guessing. A fresh perspective often spots what you've been staring past. The hypothesis should be different from what you've been investigating.
 
-**Watch out for:** Two things. First, Claude jumping into the same failed approach you already tried. The "I have NOT been able to fix it by" section exists specifically to prevent this — if Claude ignores it, push back. Second, Claude making assumptions about the code without reading it.
+**Watch out for:** Two things. First, the agent jumping into the same failed approach you already tried. The "I have NOT been able to fix it by" section exists specifically to prevent this — if the agent ignores it, push back. Second, the agent making assumptions about the code without reading it.
 
 ---
 
@@ -1743,7 +1760,7 @@ the whole schema)
 
 **Context:**
 
-- ORM and database: [from your spec, or say "see @docs/SPEC.md"]
+- ORM and database: [from your spec, or say "see docs/SPEC.md"]
 - Is this a migration issue, a query issue, or a data issue? [your
   best guess, or "not sure"]
 - Did this query ever work? [yes/no/first time running it]
@@ -1760,9 +1777,9 @@ Please:
 5. If the fix involves a schema change, warn me about the impact on
    existing data and any migration steps required
 
-**What good output looks like:** Claude identifying which layer the problem is at (schema, query, or data) before suggesting fixes. The generated SQL is the most useful output here — if you can see the actual SQL, you can often spot the issue yourself. For migration issues, Claude should explain the gap between the schema and the database state clearly.
+**What good output looks like:** The agent identifying which layer the problem is at (schema, query, or data) before suggesting fixes. The generated SQL is the most useful output here — if you can see the actual SQL, you can often spot the issue yourself. For migration issues, the agent should explain the gap between the schema and the database state clearly.
 
-**Watch out for:** Three things. First, Claude suggesting schema changes for what's actually a query problem, or vice versa. Second, migration fixes that don't account for existing data. Third, Claude suggesting raw SQL to fix an ORM issue — the fix should use the ORM unless there's a genuine reason it can't.
+**Watch out for:** Three things. First, the agent suggesting schema changes for what's actually a query problem, or vice versa. Second, migration fixes that don't account for existing data. Third, the agent suggesting raw SQL to fix an ORM issue — the fix should use the ORM unless there's a genuine reason it can't.
 
 ---
 
@@ -1772,14 +1789,14 @@ Please:
 
 ### 7.1 — End-of-Session Handoff
 
-**When to use it:** At the end of every working session, before closing Claude. This is referenced by CLAUDE.md and multiple other prompts in this library — it's the standard process for cleanly closing a session so the next one can pick up without losing context.
+**When to use it:** At the end of every working session, before closing your AI agent. This is referenced by AGENTS.md and multiple other prompts in this library — it's the standard process for cleanly closing a session so the next one can pick up without losing context.
 
 **Model:** Fast/code-focused tier
 
 **The prompt:**
 We're wrapping up this session. Please do the following:
 
-1. Update PROGRESS.md (see @docs/PROGRESS.md):
+1. Update PROGRESS.md (see docs/PROGRESS.md):
    - Move anything we completed today from "Not Started" or "In
      Progress" to "Implemented"
    - Move anything we started but didn't finish to "In Progress"
@@ -1796,7 +1813,7 @@ We're wrapping up this session. Please do the following:
    - Has 3-5 bullet points listing the specific changes
    - Includes a TODO comment for anything left unfinished
 
-3. Update DECISIONS.md (see @docs/DECISIONS.md) if we made any
+3. Update DECISIONS.md (see docs/DECISIONS.md) if we made any
    architectural decisions today. Use the standard format:
    - Decision, Why, Alternatives considered, Consequences, Revisit if
    - Be honest about the reasoning — if a decision was driven by
@@ -1810,13 +1827,13 @@ We're wrapping up this session. Please do the following:
 
 **What good output looks like:** A PROGRESS.md update you can commit alongside the code. A commit message that would tell a developer in 6 months exactly what happened in this session. The next-session recommendation should be specific.
 
-**Watch out for:** Three things. First, PROGRESS.md updates that are vague about where an in-progress item was left off. Second, Claude skipping the DECISIONS.md update. Third, the commit message having a single vague bullet point.
+**Watch out for:** Three things. First, PROGRESS.md updates that are vague about where an in-progress item was left off. Second, the agent skipping the DECISIONS.md update. Third, the commit message having a single vague bullet point.
 
 ---
 
 ### 7.2 — Session Start Orientation
 
-**When to use it:** At the start of a new session when you haven't touched the project in a few days and need to reorient quickly. If you set up CLAUDE.md with Prompt 1.4, the session start ritual happens automatically — this prompt is for when you need more context than the automatic ritual provides, or when starting a fresh conversation.
+**When to use it:** At the start of a new session when you haven't touched the project in a few days and need to reorient quickly. If you set up AGENTS.md with Prompt 1.4, the session start ritual happens automatically — this prompt is for when you need more context than the automatic ritual provides, or when starting a fresh conversation.
 
 **Model:** Fast/code-focused tier
 
@@ -1826,10 +1843,10 @@ orient me.
 
 Read the full project context:
 
-- SPEC.md (see @docs/SPEC.md)
-- PROGRESS.md (see @docs/PROGRESS.md)
-- DECISIONS.md (see @docs/DECISIONS.md)
-- CLAUDE.md (see @CLAUDE.md)
+- SPEC.md (see docs/SPEC.md)
+- PROGRESS.md (see docs/PROGRESS.md)
+- DECISIONS.md (see docs/DECISIONS.md)
+- AGENTS.md
 
 Run:
 
@@ -1853,15 +1870,15 @@ Then ask me what I want to work on today.
 
 Do not write any code until I tell you what we're doing.
 
-**What good output looks like:** A clear picture of where the project stands in under 60 seconds. Claude should be asking you what to work on, not proposing its own agenda.
+**What good output looks like:** A clear picture of where the project stands in under 60 seconds. The agent should be asking you what to work on, not proposing its own agenda.
 
-**Watch out for:** Two things. First, Claude immediately suggesting what to work on instead of asking you. The last line exists for a reason — you should be driving the session, not Claude. Second, the orientation being so long it takes five minutes to read. This should be a quick brief, not a comprehensive report.
+**Watch out for:** Two things. First, the agent immediately suggesting what to work on instead of asking you. The last line exists for a reason — you should be driving the session, not the agent. Second, the orientation being so long it takes five minutes to read. This should be a quick brief, not a comprehensive report.
 
 ---
 
 ### 7.3 — Context Collapse Recovery
 
-**When to use it:** When Claude starts suggesting the wrong framework, contradicting earlier decisions, duplicating code that already exists, or generally acting like it's forgotten the project. These are signs of context collapse — Claude has lost track of the project's accumulated context. Start a completely fresh conversation.
+**When to use it:** When the agent starts suggesting the wrong framework, contradicting earlier decisions, duplicating code that already exists, or generally acting like it's forgotten the project. These are signs of context collapse — the agent has lost track of the project's accumulated context. Start a completely fresh conversation.
 
 **Model:** Fast/code-focused tier — **fresh conversation.**
 
@@ -1870,10 +1887,10 @@ I'm resuming a project after a context collapse. Start fresh.
 
 Read the full project context before responding:
 
-- SPEC.md (see @docs/SPEC.md)
-- CLAUDE.md (see @CLAUDE.md)
-- PROGRESS.md (see @docs/PROGRESS.md)
-- DECISIONS.md (see @docs/DECISIONS.md)
+- SPEC.md (see docs/SPEC.md)
+- AGENTS.md
+- PROGRESS.md (see docs/PROGRESS.md)
+- DECISIONS.md (see docs/DECISIONS.md)
 
 Also run:
 
@@ -1891,7 +1908,7 @@ task before we proceed. Specifically:
 
 1. What is the tech stack?
 2. What has been built so far?
-3. What are the project rules from CLAUDE.md?
+3. What are the project rules from AGENTS.md?
 4. What is the current task and where was it left off?
 5. What are the key decisions from DECISIONS.md that affect
    current work?
@@ -1899,13 +1916,13 @@ task before we proceed. Specifically:
 If your summary is wrong about anything, I'll correct you before
 we continue.
 
-**What good output looks like:** Claude demonstrating it has absorbed the project context correctly — naming the specific stack, acknowledging specific features that have been built, quoting rules from CLAUDE.md, and understanding the current task with enough detail to resume. If the summary is wrong on any point, correct it before proceeding.
+**What good output looks like:** The agent demonstrating it has absorbed the project context correctly — naming the specific stack, acknowledging specific features that have been built, quoting rules from AGENTS.md, and understanding the current task with enough detail to resume. If the summary is wrong on any point, correct it before proceeding.
 
-**Watch out for:** Two things. First, Claude giving a generic summary that could apply to any project. Push it to be specific. Second, Claude eager to start coding before you've verified its understanding. The whole point of this prompt is to rebuild context before any code is written.
+**Watch out for:** Two things. First, the agent giving a generic summary that could apply to any project. Push it to be specific. Second, the agent eager to start coding before you've verified its understanding. The whole point of this prompt is to rebuild context before any code is written.
 
 ---
 
-### 7.4 — Audit Against CLAUDE.md
+### 7.4 — Audit Against AGENTS.md
 
 **When to use it:** Periodically — every few sessions — to catch drift from your own standards. Also useful before a milestone review (Prompt 3.3) as preparation.
 
@@ -1914,9 +1931,9 @@ we continue.
 **The prompt:**
 Audit the current codebase against our project rules.
 
-Read CLAUDE.md (see @CLAUDE.md) and then scan the codebase.
+Read AGENTS.md and then scan the codebase.
 
-For each rule in CLAUDE.md, check whether the existing code follows
+For each rule in AGENTS.md, check whether the existing code follows
 it. Report back as:
 
 - [x] Rule is followed consistently across the codebase
@@ -1948,9 +1965,9 @@ At the end, tell me:
 - Total rules violated
 - The top 3 most important violations to fix first
 
-**What good output looks like:** At least a few `[~]` items — it's rare to be fully consistent across an entire codebase. The findings become your technical debt list. The most valuable output is the "is the code wrong or is the rule impractical" assessment, because it helps you evolve your CLAUDE.md over time.
+**What good output looks like:** At least a few `[~]` items — it's rare to be fully consistent across an entire codebase. The findings become your technical debt list. The most valuable output is the "is the code wrong or is the rule impractical" assessment, because it helps you evolve your AGENTS.md over time.
 
-**Watch out for:** Two things. First, Claude marking everything as `[x]` without actually scanning files. Second, Claude suggesting you remove rules rather than fix the code. The default assumption should be that violations need to be fixed — only revise the rule if the violation pattern reveals that the rule genuinely doesn't make sense for your project.
+**Watch out for:** Two things. First, the agent marking everything as `[x]` without actually scanning files. Second, the agent suggesting you remove rules rather than fix the code. The default assumption should be that violations need to be fixed — only revise the rule if the violation pattern reveals that the rule genuinely doesn't make sense for your project.
 
 ---
 
@@ -1960,7 +1977,7 @@ At the end, tell me:
 
 ### 8.1 — Targeted Refactor
 
-**When to use it:** When a specific file or function has grown too complex. Use plan mode to review the refactoring plan before Claude changes anything.
+**When to use it:** When a specific file or function has grown too complex. Use plan mode to review the refactoring plan before the agent changes anything.
 
 **Model:** Fast/code-focused tier
 
@@ -2014,7 +2031,7 @@ After I approve and switch to act mode:
 
 **What good output looks like:** Code you can read top to bottom without getting lost. The refactored version should be shorter or the same length as the original. The dependency trace should confirm that nothing outside the file was affected. If tests existed, they all still pass.
 
-**Watch out for:** Four things. First, Claude changing behavior during a refactor. "Refactor" means restructure, not rewrite. Second, Claude introducing new patterns that don't exist elsewhere in the codebase. Third, the refactor growing in scope — "while I was in there, I also improved..." means scope creep. Fourth, Claude skipping the test check. Refactoring without tests is flying blind — if no tests exist, seriously consider writing them first.
+**Watch out for:** Four things. First, the agent changing behavior during a refactor. "Refactor" means restructure, not rewrite. Second, the agent introducing new patterns that don't exist elsewhere in the codebase. Third, the refactor growing in scope — "while I was in there, I also improved..." means scope creep. Fourth, the agent skipping the test check. Refactoring without tests is flying blind — if no tests exist, seriously consider writing them first.
 
 ---
 
@@ -2063,7 +2080,7 @@ Give me a final recommendation:
 
 **What good output looks like:** At least 2-3 dependencies flagged as unnecessary or replaceable. The best finding is a package that's imported but only used for one function that could be replaced with 5 lines of native code — removing it reduces your attack surface and bundle size.
 
-**Watch out for:** Three things. First, Claude recommending removal of packages that ARE necessary but are imported indirectly (through a config file or framework convention rather than a direct import statement). Second, Claude recommending lighter alternatives that don't actually have the same feature coverage. Third, the audit missing indirect dependencies that have vulnerabilities. The package manager's audit command catches these — make sure Claude actually runs it rather than guessing.
+**Watch out for:** Three things. First, the agent recommending removal of packages that ARE necessary but are imported indirectly (through a config file or framework convention rather than a direct import statement). Second, the agent recommending lighter alternatives that don't actually have the same feature coverage. Third, the audit missing indirect dependencies that have vulnerabilities. The package manager's audit command catches these — make sure the agent actually runs it rather than guessing.
 
 ---
 
@@ -2072,13 +2089,13 @@ Give me a final recommendation:
 | Task | Prompt # | Model |
 | ------ | ---------- | ------- |
 | Reverse-engineer SPEC.md | 0.1 | Deep/extended |
-| Reverse-engineer CLAUDE.md | 0.2 | Fast/code-focused |
+| Reverse-engineer AGENTS.md | 0.2 | Fast/code-focused |
 | State of the Union (PROGRESS/DECISIONS) | 0.3 | Fast/code-focused |
 | Delta Audit (Alignment Check) | 0.4 | Deep/extended |
 | Turn idea into spec | 1.1 | Deep/extended |
 | Create build plan | 1.2 | Fast/code-focused |
 | Document decisions | 1.3 | Fast/code-focused |
-| Create CLAUDE.md | 1.4 | Fast/code-focused |
+| Create AGENTS.md | 1.4 | Fast/code-focused |
 | Choose tech stack | 1.5 | Deep/extended |
 | Build any feature | 2.1 | Fast/code-focused (plan → act) |
 | Design database schema | 2.2 | Deep/extended (plan → act) |
@@ -2087,7 +2104,7 @@ Give me a final recommendation:
 | Build auth system | 2.5 | Deep/extended (plan → act) |
 | Modify complex code safely | 2.6 | Fast/code-focused (plan mode) |
 | Standard code review | 3.1 | Deep/extended (fresh session) |
-| Security review | 3.2 | Gemini / GPT-4o |
+| Security review | 3.2 | Cross-model (different model family) |
 | Architecture review | 3.3 | Deep/extended + extended thinking (fresh session) |
 | Quick sanity check | 3.4 | Fast/code-focused (fresh session) |
 | Write tests | 4.1 | Fast/code-focused |
@@ -2103,10 +2120,10 @@ Give me a final recommendation:
 | End of session | 7.1 | Fast/code-focused |
 | Session start | 7.2 | Fast/code-focused |
 | Context collapse recovery | 7.3 | Fast/code-focused (fresh session) |
-| CLAUDE.md audit | 7.4 | Fast/code-focused |
+| AGENTS.md audit | 7.4 | Fast/code-focused |
 | Refactor messy code | 8.1 | Fast/code-focused (plan → act) |
 | Dependency audit | 8.2 | Fast/code-focused |
 
 ---
 
-*Version 2.3 — Refined for stack-agnostic usage, Claude Code for VS Code, plan/act workflow, and existing codebase onboarding. Expand this library as you discover prompts that work. When you find a prompt that reliably produces better output than what's here, replace it.*
+*Version 2.4 — Refined for agent-agnostic usage across any AI coding tool, plan/act workflow, and existing codebase onboarding. AGENTS.md replaces CLAUDE.md as the canonical rulebook; tool-specific wrappers bridge the gap. Expand this library as you discover prompts that work. When you find a prompt that reliably produces better output than what's here, replace it.*

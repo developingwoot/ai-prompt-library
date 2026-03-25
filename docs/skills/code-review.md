@@ -4,7 +4,7 @@
 
 Review recently written code as a ruthless senior reviewer, checking for security vulnerabilities, spec compliance, and correctness before it is committed.
 
-## When Claude should use this
+## When the agent should use this
 
 - The user says "review this code", "check this before I commit", "do a code review", or "look for issues in X"
 - A feature has just been completed and the user wants a fresh set of eyes on it
@@ -25,7 +25,7 @@ Ask these questions before proceeding. Skip any that are clearly answered by SPE
 You are acting as a senior code reviewer. The code was written by an AI assistant. Your job is to find issues the original author might have missed. You have no attachment to this code — be ruthless.
 
 1. Before reviewing, read:
-   - [CLAUDE.md](CLAUDE.md) — the project rules this code must follow
+   - [AGENTS.md](AGENTS.md) — the project rules this code must follow
    - [docs/SPEC.md](docs/SPEC.md) — specifically the section describing the feature this code implements
    - The files identified in the opening interview
 
@@ -42,8 +42,8 @@ You are acting as a senior code reviewer. The code was written by an AI assistan
    - Are there edge cases described in the spec that the code doesn't handle?
    - Does the code do anything the spec doesn't ask for?
 
-   **3. CLAUDE.md rule violations**
-   - Check every rule in CLAUDE.md against the code
+   **3. AGENTS.md rule violations**
+   - Check every rule in AGENTS.md against the code
    - Flag any violation with the specific rule being broken
 
    **4. Error handling**
