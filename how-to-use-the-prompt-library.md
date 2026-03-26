@@ -29,7 +29,7 @@ The entire system revolves around four markdown files. Think of them as your pro
 | **DECISIONS.md** | A log of every major technical decision and why it was made | `docs/DECISIONS.md` |
 | **AGENTS.md** | The rulebook your AI agent follows every session — coding standards, forbidden actions, and how sessions start and end. References the other three files. | Project root |
 
-Without these files, every new conversation starts from zero and you lose all accumulated context. If your tool requires a specific filename (e.g., Claude Code reads `CLAUDE.md`, Cursor reads `.cursorrules`), create a thin wrapper file that imports AGENTS.md. Keeping them updated is what makes this workflow sustainable over weeks and months.
+Without these files, every new conversation starts from zero and you lose all accumulated context. The prompts in this library automatically detect which AI tool(s) you're using and generate the appropriate wrapper file — so your tool reads AGENTS.md at session start without any manual setup. Keeping these files updated is what makes this workflow sustainable over weeks and months.
 
 ---
 
@@ -61,9 +61,9 @@ This records why you chose your frameworks, database, auth strategy, and deploym
 
 ### Step 4: Create your rulebook → [Prompt 1.4](agent-native-prompt-library%202.3.md#14--agentsmd-scaffolding)
 
-This is the last setup step because AGENTS.md references the other three files, so they need to exist first. It generates the rules the agent follows in every session — coding standards, security rules, what's forbidden, how sessions start, and how sessions end. After generating AGENTS.md, create a tool-specific wrapper (e.g., `CLAUDE.md` containing `@agents.md` for Claude Code) so your tool reads it automatically.
+This is the last setup step because AGENTS.md references the other three files, so they need to exist first. It generates the rules the agent follows in every session — coding standards, security rules, what's forbidden, how sessions start, and how sessions end. The prompt automatically detects your tool and creates the appropriate wrapper file so your tool reads AGENTS.md at session start.
 
-**Output:** `AGENTS.md` in project root (plus a tool-specific wrapper file)
+**Output:** `AGENTS.md` in project root (plus a tool-specific wrapper file generated automatically)
 
 After these four steps, you're ready to start building. Move on to the **Starting a Coding Session** section below.
 
@@ -83,7 +83,7 @@ The agent scans your entire codebase and produces a SPEC.md based on what actual
 
 The agent analyzes your code patterns — error handling, naming conventions, file structure, state management — and writes an AGENTS.md that documents your actual conventions. This ensures AI-generated code matches your existing style rather than introducing new patterns.
 
-**Output:** `AGENTS.md` in project root (plus a tool-specific wrapper file)
+**Output:** `AGENTS.md` in project root (plus a tool-specific wrapper file generated automatically)
 
 ### Step 3: Map your progress and decisions → [Prompt 0.3](agent-native-prompt-library%202.3.md#03--state-of-the-union-reverse-engineering-progress--decisions)
 

@@ -178,9 +178,30 @@ Include:
 
 CRITICAL RULE: Do not suggest idealized "best practices" if the codebase does not actually follow them. If the codebase uses a specific, slightly unorthodox pattern, document that pattern as the rule so future AI code matches the existing codebase.
 
+After generating AGENTS.md, detect which AI coding tools are configured
+for this project by scanning the project root for these indicators:
+
+- `.claude/` directory or existing `CLAUDE.md` → Claude Code
+- `.cursor/` directory → Cursor
+- `.windsurfrules` file → Windsurf
+- `.github/copilot-instructions.md` or `.github/workflows/` directory → GitHub Copilot
+- `.clinerules` file → Cline
+
+For each detected tool, create the appropriate wrapper file:
+
+- **Claude Code:** Create `CLAUDE.md` in the project root containing only `@agents.md`
+- **Cursor:** Create `.cursor/rules/agents.mdc` with frontmatter `alwaysApply: true` and a note to read AGENTS.md at session start
+- **Windsurf:** Create `.windsurfrules` containing `@agents.md`
+- **GitHub Copilot:** Copilot cannot import files — create `.github/copilot-instructions.md` by inlining the core rules from AGENTS.md (session ritual, code rules, forbidden section)
+- **Cline:** Create `.clinerules` referencing AGENTS.md as the rulebook to read at session start
+
+If no tool indicators are found, ask the user: "Which AI coding tool(s) are you using? (e.g., Claude Code, Cursor, Windsurf, GitHub Copilot, Cline)"
+
+Note: The wrapper is for the tool agent (Claude Code, Copilot, Cursor, etc.), not the underlying model. A user running Copilot with Sonnet selected still needs a Copilot wrapper, not a CLAUDE.md — the tool reads its own config file regardless of which model it's using.
+
 Format this as a clean markdown file I can save as AGENTS.md in the project root.
 
-> **Tool-specific wrappers:** After generating AGENTS.md, create a wrapper file for your tool so it reads the rules automatically. For Claude Code, create a `CLAUDE.md` containing `@agents.md`. For Cursor, reference AGENTS.md in `.cursorrules`. For other tools, configure them to read AGENTS.md at session start.
+> **Tool-specific wrappers:** The prompt above instructs the AI to scan for tool indicators and create the appropriate wrapper automatically. If you're using multiple tools (e.g., Claude Code and Cursor on the same repo), it will create a wrapper for each. If you add a new tool later, re-run this step — or manually create the wrapper using the table below as reference.
 
 **What good output looks like:** A rulebook that feels incredibly familiar. It should document your exact naming conventions and architectural choices.
 
@@ -483,14 +504,31 @@ agent reads at the start of every session. Include:
    - Update DECISIONS.md if any architectural decisions were made
    - Recommend what to tackle first in the next session
 
+After generating AGENTS.md, detect which AI coding tools are configured
+for this project by scanning the project root for these indicators:
+
+- `.claude/` directory or existing `CLAUDE.md` → Claude Code
+- `.cursor/` directory → Cursor
+- `.windsurfrules` file → Windsurf
+- `.github/copilot-instructions.md` or `.github/workflows/` directory → GitHub Copilot
+- `.clinerules` file → Cline
+
+For each detected tool, create the appropriate wrapper file:
+
+- **Claude Code:** Create `CLAUDE.md` in the project root containing only `@agents.md`
+- **Cursor:** Create `.cursor/rules/agents.mdc` with frontmatter `alwaysApply: true` and a note to read AGENTS.md at session start
+- **Windsurf:** Create `.windsurfrules` containing `@agents.md`
+- **GitHub Copilot:** Copilot cannot import files — create `.github/copilot-instructions.md` by inlining the core rules from AGENTS.md (session ritual, code rules, forbidden section)
+- **Cline:** Create `.clinerules` referencing AGENTS.md as the rulebook to read at session start
+
+If no tool indicators are found, ask the user: "Which AI coding tool(s) are you using? (e.g., Claude Code, Cursor, Windsurf, GitHub Copilot, Cline)"
+
+Note: The wrapper is for the tool agent (Claude Code, Copilot, Cursor, etc.), not the underlying model. A user running Copilot with Sonnet selected still needs a Copilot wrapper, not a CLAUDE.md — the tool reads its own config file regardless of which model it's using.
+
 Format this as a clean markdown file I can save as AGENTS.md in the
 project root.
 
-**Tool-specific wrappers:** After generating AGENTS.md, create a wrapper file so your tool reads it automatically at session start:
-
-> - **Claude Code:** Create a `CLAUDE.md` in the project root containing `@agents.md`
-> - **Cursor:** Reference AGENTS.md in your `.cursorrules` file
-> - **Other tools:** Configure your AI agent to read AGENTS.md at session start using whatever mechanism your tool provides
+**Tool-specific wrappers:** The prompt above instructs the AI to scan for tool indicators and create the appropriate wrapper automatically. If you're using multiple tools (e.g., Claude Code and Cursor on the same repo), it will create a wrapper for each. If you add a new tool later, re-run this step — or manually create the wrapper using the table below as reference.
 
 **What good output looks like:** An AGENTS.md that reads like a confident brief tailored to your specific stack. The code rules should reference your actual frameworks and languages, not generic boilerplate. The developer experience section should reflect your skill level accurately — if you said you're a beginner in the spec and the AGENTS.md doesn't mention explanations, push back.
 
