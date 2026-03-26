@@ -79,19 +79,19 @@ The agent scans your entire codebase and produces a SPEC.md based on what actual
 
 **Output:** `docs/SPEC.md`
 
-### Step 2: Extract your coding rules → [Prompt 0.2](agent-native-prompt-library%202.3.md#02--the-rule-extractor-reverse-engineering-agentsmd)
-
-The agent analyzes your code patterns — error handling, naming conventions, file structure, state management — and writes an AGENTS.md that documents your actual conventions. This ensures AI-generated code matches your existing style rather than introducing new patterns.
-
-**Output:** `AGENTS.md` in project root (plus a tool-specific wrapper file generated automatically)
-
-### Step 3: Map your progress and decisions → [Prompt 0.3](agent-native-prompt-library%202.3.md#03--state-of-the-union-reverse-engineering-progress--decisions)
+### Step 2: Map your progress and decisions → [Prompt 0.2](agent-native-prompt-library%202.3.md#02--state-of-the-union-reverse-engineering-progress--decisions)
 
 This produces both files in one step. PROGRESS.md maps what's done, what's half-built, and what technical debt exists. DECISIONS.md captures the architectural choices baked into your codebase with honest reasoning about why they were likely made.
 
 **Important:** The DECISIONS.md entries from this prompt are inferred from code patterns, not verified institutional knowledge. Every "Why" entry is the AI's best guess. Verify these against anyone who was involved in building the original app before treating them as settled fact.
 
 **Output:** `docs/PROGRESS.md` and `docs/DECISIONS.md`
+
+### Step 3: Extract your coding rules → [Prompt 0.3](agent-native-prompt-library%202.3.md#03--the-rule-extractor-reverse-engineering-agentsmd)
+
+The agent analyzes your code patterns — error handling, naming conventions, file structure, state management — and writes an AGENTS.md that documents your actual conventions. This ensures AI-generated code matches your existing style rather than introducing new patterns.
+
+**Output:** `AGENTS.md` in project root (plus a tool-specific wrapper file generated automatically)
 
 ### Step 4: Find where your code breaks its own rules → [Prompt 0.4](agent-native-prompt-library%202.3.md#04--the-delta-audit-alignment-check)
 
@@ -107,7 +107,7 @@ After these four steps, your existing project is fully onboarded into the workfl
 
 Do this every time you sit down to work on the project.
 
-If you set up AGENTS.md with [Prompt 1.4](agent-native-prompt-library%202.3.md#14--agentsmd-scaffolding) (new project) or [Prompt 0.2](agent-native-prompt-library%202.3.md#02--the-rule-extractor-reverse-engineering-agentsmd) (existing project), your agent runs a session start ritual automatically — it checks recent git history, reviews your progress file, and asks what you want to work on. For most sessions, this is enough.
+If you set up AGENTS.md with [Prompt 1.4](agent-native-prompt-library%202.3.md#14--agentsmd-scaffolding) (new project) or [Prompt 0.3](agent-native-prompt-library%202.3.md#03--the-rule-extractor-reverse-engineering-agentsmd) (existing project), your agent runs a session start ritual automatically — it checks recent git history, reviews your progress file, and asks what you want to work on. For most sessions, this is enough.
 
 If you need more context — for example, you haven't touched the project in a few days, or you're starting a fresh conversation — use [**Prompt 7.2 (Session Start Orientation)**](agent-native-prompt-library%202.3.md#72--session-start-orientation). This gives you a fuller briefing: what was last completed, what's in progress and where it was left off, the next three priorities from your build plan, any blocked items, and roughly how many sessions remain.
 
