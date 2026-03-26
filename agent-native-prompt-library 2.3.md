@@ -646,7 +646,7 @@ After I approve the plan and switch to act mode:
 6. Tell me what to manually test to confirm it works, and note which
    user journey from the spec this feature advances
 
-Do not modify any files outside the scope of this feature.
+Do not modify any files outside the scope of this feature. If you discover something outside this feature's scope that needs fixing, do not fix it — add it to the 'In Progress' or 'Not Started' section of PROGRESS.md instead.
 
 **What good output looks like:**
 
