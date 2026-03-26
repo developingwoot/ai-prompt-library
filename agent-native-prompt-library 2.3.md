@@ -88,65 +88,9 @@ Format this as a clean markdown file I can save as docs/SPEC.md.
 
 ---
 
-### 0.2 — The Rule Extractor (Reverse-Engineering AGENTS.md)
+### 0.2 — State of the Union (Reverse-Engineering PROGRESS & DECISIONS)
 
-**When to use it:** Immediately after 0.1. This establishes the coding rules for future sessions by analyzing how you currently write code, ensuring AI-generated additions match your existing style.
-
-**Model:** Fast/code-focused tier
-
-**The prompt:**
-I need to generate an AGENTS.md file for this existing project. Read the reverse-engineered spec (see docs/SPEC.md) to understand the stack, then deeply analyze the actual codebase to understand the established patterns.
-
-Analyze the following across the codebase:
-
-- Type safety strictness (e.g., are we using explicit types, `any`,
-  interfaces vs. types, specific architectural patterns?)
-- Error handling patterns (e.g., centralized middleware vs.
-  try/catch everywhere)
-- State management and data fetching patterns on the frontend
-- File naming and directory structure conventions
-
-Generate an AGENTS.md file with the following structure, but populate the "Code rules" section based on the ACTUAL conventions used in this codebase.
-
-Include:
-
-1. A project context section referencing SPEC.md, PROGRESS.md, and
-   DECISIONS.md (use your tool's file import syntax if available,
-   otherwise list them as files to read at session start).
-2. A session start ritual — steps the agent should follow before
-   writing any code:
-   - Run git log --oneline -10 to understand recent work
-   - Run git status to check current state
-   - Review PROGRESS.md to confirm what's built and what's next
-   - Ask the user what we're working on before touching any files
-3. The exact tech stack found in the code.
-4. Code rules: Document the specific patterns you found for routing, error handling, styling, and data access. Make these highly specific to this codebase (e.g., "API routes always return a standardized ApiResponse object", not just "handle errors well").
-5. Testing configuration: Scan the codebase to identify the test framework in use, the exact commands to run the full suite and a single test file, any environment setup required before tests will pass (test database, env vars, seed data), and how to interpret the output to confirm pass or failure. Document this in a Testing section of the AGENTS.md based on what actually exists — not what should ideally exist.
-6. A forbidden section: Add standard protections (no unexpected package installations, no DB schema changes without asking), but add specific guardrails based on any anti-patterns you noticed we are actively avoiding in this repo.
-7. CI/CD & secrets: Never echo, print, or persist secrets in logs/artifacts. Use the platform's secret store; do not hardcode or inline secrets in build configs. Fail the pipeline if required secrets are missing. Validate env vars at startup/build time.
-8. Developer experience — read the developer background in the spec and calibrate accordingly. If the developer is early-career or learning, explain what you're doing and why as you go. If the developer is experienced, be concise and just execute.
-9. Disagreements — if the user asks you to do something that would violate a rule in this file, introduce a security risk, create technical debt, or go against best practices for the stack, say so before proceeding. Explain why you disagree and what you'd recommend instead. Then let the user decide. Do not silently comply with something you think is a mistake.
-10. End-of-session — when the user says "we're done", follow this process:
-   - Update PROGRESS.md with what was completed, what's in progress, and any new items discovered
-   - Suggest a git commit message with type prefix and bullet points
-   - Update DECISIONS.md if any architectural decisions were made
-   - Recommend what to tackle first in the next session
-
-CRITICAL RULE: Do not suggest idealized "best practices" if the codebase does not actually follow them. If the codebase uses a specific, slightly unorthodox pattern, document that pattern as the rule so future AI code matches the existing codebase.
-
-Format this as a clean markdown file I can save as AGENTS.md in the project root.
-
-> **Tool-specific wrappers:** After generating AGENTS.md, create a wrapper file for your tool so it reads the rules automatically. For Claude Code, create a `CLAUDE.md` containing `@agents.md`. For Cursor, reference AGENTS.md in `.cursorrules`. For other tools, configure them to read AGENTS.md at session start.
-
-**What good output looks like:** A rulebook that feels incredibly familiar. It should document your exact naming conventions and architectural choices.
-
-**Watch out for:** The AI enforcing framework defaults over your custom patterns. Ensure the agent successfully extracted your custom patterns instead of falling back to its training data defaults.
-
----
-
-### 0.3 — State of the Union (Reverse-Engineering PROGRESS & DECISIONS)
-
-**When to use it:** After your SPEC.md and AGENTS.md are finalized. This creates your actionable backlog and documents the architectural choices that were implicitly made when the app was first built.
+**When to use it:** Immediately after 0.1. Creates your actionable backlog and documents the architectural choices already implicitly baked into the code — before you write the agent rulebook. AGENTS.md will reference these files, so they need to exist first.
 
 **Model:** Fast/code-focused tier
 
@@ -184,6 +128,63 @@ Output both files clearly separated so I can save them as docs/PROGRESS.md and d
 **What good output looks like:** The PROGRESS.md acts as an immediate hit-list of technical debt and broken windows. The DECISIONS.md accurately captures the reality of the app's foundation without judging it.
 
 **Watch out for:** Two things. First, the "In Progress" section missing items because the code looks "complete" structurally but lacks business logic. You may need to manually seed the "Not Started" section of PROGRESS.md with the new features you actually intend to build next. Second, and more important: treating the DECISIONS.md entries as documented institutional knowledge when they are inferred. Every "Why" entry produced by this prompt is the AI's best interpretation of code patterns — not a verified record of why someone made a choice. Before treating any entry as settled fact, verify it against anyone who was actually there or against any documentation that predates this onboarding process.
+
+---
+
+### 0.3 — The Rule Extractor (Reverse-Engineering AGENTS.md)
+
+**When to use it:** After 0.1 and 0.2. PROGRESS.md and DECISIONS.md now exist, so AGENTS.md can reference them correctly. This establishes the coding rules for future sessions by analyzing how you currently write code, ensuring AI-generated additions match your existing style.
+
+**Model:** Fast/code-focused tier
+
+**The prompt:**
+I need to generate an AGENTS.md file for this existing project. Read the reverse-engineered spec (see docs/SPEC.md) to understand the stack, then deeply analyze the actual codebase to understand the established patterns.
+
+Analyze the following across the codebase:
+
+- Type safety strictness (e.g., are we using explicit types, `any`,
+  interfaces vs. types, specific architectural patterns?)
+- Error handling patterns (e.g., centralized middleware vs.
+  try/catch everywhere)
+- State management and data fetching patterns on the frontend
+- File naming and directory structure conventions
+
+Generate an AGENTS.md file with the following structure, but populate the "Code rules" section based on the ACTUAL conventions used in this codebase.
+
+Include:
+
+1. A project context section referencing SPEC.md, PROGRESS.md, and
+   DECISIONS.md (use your tool's file import syntax if available,
+   otherwise list them as files to read at session start).
+2. A session start ritual — steps the agent should follow before
+   writing any code:
+   - Run git log --oneline -10 to understand recent work
+   - Run git status to check current state
+   - Review PROGRESS.md to confirm what's built and what's next
+   - Ask the user what we're working on before touching any files
+3. The exact tech stack found in the code.
+4. Code rules: Document the specific patterns you found for routing, error handling, styling, and data access. Make these highly specific to this codebase (e.g., "API routes always return a standardized ApiResponse object", not just "handle errors well").
+5. Testing configuration: Scan the codebase to identify the test framework in use, the exact commands to run the full suite and a single test file, any environment setup required before tests will pass (test database, env vars, seed data), and how to interpret the output to confirm pass or failure. Document this in a Testing section of the AGENTS.md based on what actually exists — not what should ideally exist.
+6. A forbidden section: Add standard protections (no unexpected package installations, no DB schema changes without asking), but add specific guardrails based on any anti-patterns you noticed we are actively avoiding in this repo.
+7. CI/CD & secrets: Never echo, print, or persist secrets in logs/artifacts. Use the platform's secret store; do not hardcode or inline secrets in build configs. Fail the pipeline if required secrets are missing. Validate env vars at startup/build time.
+8. Developer experience — read the developer background in the spec and calibrate accordingly. If the developer is early-career or learning, explain what you're doing and why as you go. If the developer is experienced, be concise and just execute.
+9. Disagreements — if the user asks you to do something that would violate a rule in this file, introduce a security risk, create technical debt, or go against best practices for the stack, say so before proceeding. Explain why you disagree and what you'd recommend instead. Then let the user decide. Do not silently comply with something you think is a mistake.
+10. End-of-session — when the user says "we're done", follow this process:
+
+- Update PROGRESS.md with what was completed, what's in progress, and any new items discovered
+- Suggest a git commit message with type prefix and bullet points
+- Update DECISIONS.md if any architectural decisions were made
+- Recommend what to tackle first in the next session
+
+CRITICAL RULE: Do not suggest idealized "best practices" if the codebase does not actually follow them. If the codebase uses a specific, slightly unorthodox pattern, document that pattern as the rule so future AI code matches the existing codebase.
+
+Format this as a clean markdown file I can save as AGENTS.md in the project root.
+
+> **Tool-specific wrappers:** After generating AGENTS.md, create a wrapper file for your tool so it reads the rules automatically. For Claude Code, create a `CLAUDE.md` containing `@agents.md`. For Cursor, reference AGENTS.md in `.cursorrules`. For other tools, configure them to read AGENTS.md at session start.
+
+**What good output looks like:** A rulebook that feels incredibly familiar. It should document your exact naming conventions and architectural choices.
+
+**Watch out for:** The AI enforcing framework defaults over your custom patterns. Ensure the agent successfully extracted your custom patterns instead of falling back to its training data defaults.
 
 ---
 
@@ -485,7 +486,8 @@ agent reads at the start of every session. Include:
 Format this as a clean markdown file I can save as AGENTS.md in the
 project root.
 
-> **Tool-specific wrappers:** After generating AGENTS.md, create a wrapper file so your tool reads it automatically at session start:
+**Tool-specific wrappers:** After generating AGENTS.md, create a wrapper file so your tool reads it automatically at session start:
+
 > - **Claude Code:** Create a `CLAUDE.md` in the project root containing `@agents.md`
 > - **Cursor:** Reference AGENTS.md in your `.cursorrules` file
 > - **Other tools:** Configure your AI agent to read AGENTS.md at session start using whatever mechanism your tool provides
