@@ -2,9 +2,9 @@
 
 ## Purpose
 
-Guide Claude through a structured plan-then-build workflow to implement a new feature safely, with full codebase orientation before any code is written.
+Guide the agent through a structured plan-then-build workflow to implement a new feature safely, with full codebase orientation before any code is written.
 
-## When Claude should use this
+## When the agent should use this
 
 - The user says something like "implement X", "build X", "add X feature", or "I need X to work"
 - A new piece of functionality needs to be created (not a bug fix or refactor)
@@ -33,7 +33,7 @@ Ask these questions before proceeding. Skip any that are clearly answered by SPE
 
 3. Scan the existing codebase to understand what files are present, what patterns are established, and what can be reused. Do not skip this step — generic plans that ignore existing code are a failure mode.
 
-4. Read CLAUDE.md and identify any rules especially relevant to this feature. If this feature touches auth, payments, or sensitive data, call out the specific rules that apply by name.
+4. Read AGENTS.md and identify any rules especially relevant to this feature. If this feature touches auth, payments, or sensitive data, call out the specific rules that apply by name.
 
 5. Present your plan:
    - The files you will create or modify, and why each one is needed
@@ -45,7 +45,7 @@ Ask these questions before proceeding. Skip any that are clearly answered by SPE
 
 ### Act mode (only after approval)
 
-1. Implement the feature following all rules in CLAUDE.md. Stay within the scope of the approved plan — do not modify files outside it.
+1. Implement the feature following all rules in AGENTS.md. Stay within the scope of the approved plan — do not modify files outside it.
 
 2. Before running tests, check whether required setup is in place: migrations, seed data, environment variables. If anything is missing, stop and ask the user whether to run migrations or seed data in this session. Do not mark tests as failed because of missing setup.
 
@@ -65,6 +65,6 @@ Ask these questions before proceeding. Skip any that are clearly answered by SPE
 
 ## Watch out for
 
-- **Skipping orientation.** Claude jumping straight to a plan based on the feature name alone, without reading the spec or scanning the codebase.
+- **Skipping orientation.** The agent jumping straight to a plan based on the feature name alone, without reading the spec or scanning the codebase.
 - **Scope creep in the plan.** If the plan proposes modifying more than 5–6 files for a single feature, the feature may need to be broken into smaller pieces.
-- **Skipping the test run.** After implementation, Claude must run existing tests — not assume they still pass.
+- **Skipping the test run.** After implementation, the agent must run existing tests — not assume they still pass.

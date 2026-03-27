@@ -4,15 +4,15 @@
 
 Write a complete, behavior-focused test suite for a feature that was just built, then run the tests and fix any failures before handing back.
 
-## When Claude should use this
+## When the agent should use this
 
 - The user says "write tests for X", "add tests", "now test it", or "cover this with tests"
 - A feature was just implemented and the user wants test coverage added
-- Best used immediately after building, while Claude still has full context of what was written
+- Best used immediately after building, while the agent still has full context of what was written
 
 ## Opening interview
 
-Ask these questions before proceeding. Skip any that are clearly answered by the codebase, SPEC.md, or CLAUDE.md.
+Ask these questions before proceeding. Skip any that are clearly answered by the codebase, SPEC.md, or AGENTS.md.
 
 1. **Which feature or files should be tested?** Name the specific feature, endpoint, component, or file.
    *If skipped: test whatever was most recently implemented in this session. State your interpretation before writing.*
@@ -24,7 +24,7 @@ Ask these questions before proceeding. Skip any that are clearly answered by the
 
 1. Read [docs/SPEC.md](docs/SPEC.md) and find the section describing this feature. The tests should verify the spec — the expected user-facing behavior — not just the current implementation.
 
-2. Check the existing test files in the project. If tests already exist, match their style, structure, and framework exactly. Check CLAUDE.md for any declared testing standards.
+2. Check the existing test files in the project. If tests already exist, match their style, structure, and framework exactly. Check AGENTS.md for any declared testing standards.
 
 3. Identify the user journey this feature belongs to. Tests should verify user-facing behavior, not just internal functions.
 

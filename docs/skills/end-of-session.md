@@ -4,11 +4,11 @@
 
 Close out a working session cleanly by updating project docs, drafting a commit message, and leaving a clear starting point for the next session.
 
-## When Claude should use this
+## When the agent should use this
 
 - The user says "we're done for today", "let's wrap up", "end of session", "that's it for now", or similar
-- The user asks Claude to update PROGRESS.md at the end of a session
-- Referenced by CLAUDE.md or other skills as the standard session-close process
+- The user asks the agent to update PROGRESS.md at the end of a session
+- Referenced by AGENTS.md or other skills as the standard session-close process
 
 ## Opening interview
 
